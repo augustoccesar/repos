@@ -1,4 +1,9 @@
-use std::{path::Path, process::exit};
+use std::{
+    fs::OpenOptions,
+    io::{Read, Seek, Write},
+    path::Path,
+    process::exit,
+};
 
 use clap::{command, Args, Parser, Subcommand};
 
@@ -124,6 +129,51 @@ fn main() {
                 Err(_) => todo!(),
             }
         }
-        Command::Install(_) => todo!(),
+        Command::Install(_) => {
+            // TODO: Maybe create an uninstall command as well?
+
+            // TODO: Can format this nicer?
+            let function = "
+###begin:repos_functions
+# repos expand will return the path of the repo locally and this 
+# function will only be responsible for cd'ing into the folder if successful
+# or print the output if it fails.
+function r() {
+    OUTPUT=$(repos expand $1)
+    if [[ $? -eq 0 ]]; then
+        cd $OUTPUT
+    else
+        echo $OUTPUT
+    fi
+}
+###end:repos_functions
+            ";
+
+            let home_path = dirs::home_dir().unwrap().to_str().unwrap().to_string();
+            // TODO: Support files other than zsh
+            let rc_file_path = format!("{}/.zshrc", &home_path);
+
+            let mut rc_file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .append(true)
+                .open(rc_file_path)
+                .unwrap();
+
+            let mut rc_file_data = String::new();
+            rc_file.read_to_string(&mut rc_file_data).unwrap();
+
+            if let Some(_) = rc_file_data.find("###begin:repos_functions") {
+                println!("Already installed!");
+                exit(0);
+            }
+
+            rc_file.rewind().unwrap();
+            rc_file.write_all(function.as_bytes()).unwrap();
+
+            println!("Installed!");
+            println!("Run 'source ~/.zshrc' to reflect changes.");
+            exit(0);
+        }
     }
 }
