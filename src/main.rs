@@ -33,12 +33,6 @@ struct FullRepoName {
     repo: String,
 }
 
-impl FullRepoName {
-    fn clone_url(&self) -> String {
-        format!("git@{}:{}/{}.git", self.host, self.username, self.repo)
-    }
-}
-
 #[derive(Debug)]
 enum RepoName {
     Full(FullRepoName),
@@ -64,7 +58,13 @@ impl RepoName {
     }
 
     pub fn clone_url(&self) -> String {
-        todo!()
+        match self {
+            RepoName::Full(info) => {
+                format!("git@{}:{}/{}.git", info.host, info.username, info.repo)
+            },
+            RepoName::UserRepo(_, _) => todo!(),
+            RepoName::RepoOnly(_) => todo!(),
+        }
     }
 }
 
