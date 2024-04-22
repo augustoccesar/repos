@@ -1,4 +1,4 @@
-use std::process::exit;
+use std::{path::Path, process::exit};
 
 use clap::{command, Args, Parser, Subcommand};
 
@@ -110,10 +110,16 @@ fn main() {
             match repo_name {
                 Ok(repo_name) => {
                     let path = repo_name.local_path();
-                    // TODO: clone if does not exist
-        
-                    print!("{}", &path);
-                    exit(0);
+                    let exists = Path::new(&path).exists();
+
+                    if exists {
+                        print!("{}", &path);
+                        exit(0);
+                    } else {
+                        // TODO: clone if does not exist
+                        print!("Could not find repository locally. Does not support clone yet.");
+                        exit(1);
+                    }
                 }
                 Err(_) => todo!(),
             }
