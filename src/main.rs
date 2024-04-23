@@ -37,6 +37,7 @@ struct ConfigCommandAddAliasArgs {
 #[derive(Subcommand, Debug)]
 enum ConfigSubcommand {
     AddAlias(ConfigCommandAddAliasArgs),
+    ListAliases,
 }
 
 #[derive(Args, Debug)]
@@ -295,6 +296,17 @@ function rcd() {
                         .unwrap()
                         .insert(add_alias.alias, add_alias.repo_name);
                 }
+                ConfigSubcommand::ListAliases => match &config.aliases {
+                    Some(aliases) => {
+                        println!("Aliases:");
+                        for (alias, repo_name) in aliases {
+                            println!("  {} => {}", alias, repo_name);
+                        }
+                    }
+                    None => {
+                        println!("No aliases configured.");
+                    }
+                },
             }
 
             config.save();
