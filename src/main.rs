@@ -1,3 +1,7 @@
+// TODO: Error handling. Try to remove some of the .unwraps where it makes sense.
+// TODO: Replace hardcoded github.com hosts to be dynamic.
+// TODO: Maybe add an unistall command as well?
+
 use std::{
     collections::HashMap,
     fs::{self, File, OpenOptions},
@@ -82,7 +86,9 @@ impl RepoName {
                     repo_name.repo
                 )
             }
-            RepoName::UserRepo(_, _) => todo!(),
+            RepoName::UserRepo(username, repo) => {
+                format!("{}/repos/github.com/{username}/{repo}", home_path())
+            }
             RepoName::RepoOnly(repo_name) => {
                 if let Some(aliases) = &config.aliases {
                     if let Some(alias) = aliases.get(repo_name) {
@@ -90,7 +96,6 @@ impl RepoName {
                             panic!("Infinite loop");
                         }
 
-                        // TODO: Handle error
                         let alias_repo_name = RepoName::try_from(alias).unwrap();
 
                         return alias_repo_name.local_path(config);
@@ -108,7 +113,9 @@ impl RepoName {
             RepoName::Full(info) => {
                 format!("git@{}:{}/{}.git", info.host, info.username, info.repo)
             }
-            RepoName::UserRepo(_, _) => todo!(),
+            RepoName::UserRepo(username, repo) => {
+                format!("git@github.com:{username}/{repo}.git")
+            }
             RepoName::RepoOnly(_) => todo!(),
         }
     }
@@ -237,8 +244,6 @@ fn main() {
             }
         }
         Command::Install(_) => {
-            // TODO: Maybe create an uninstall command as well?
-
             // TODO: Can format this nicer?
             let function = "
 ###begin:repos_functions
