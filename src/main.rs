@@ -4,6 +4,7 @@ use std::{
     io::{Read, Seek, Write},
     path::Path,
     process::exit,
+    sync::OnceLock,
 };
 
 use clap::{command, Args, Parser, Subcommand};
@@ -53,7 +54,7 @@ impl RepoName {
             RepoName::Full(repo_name) => {
                 format!(
                     "{}/repos/{}/{}/{}",
-                    dirs::home_dir().unwrap().to_str().unwrap(),
+                    home_path(),
                     repo_name.host,
                     repo_name.username,
                     repo_name.repo
@@ -147,10 +148,22 @@ impl Config {
     }
 }
 
-// TODO: Maybe make this into a lazy static?
-fn repos_folder_path() -> String {
-    let home_path = dirs::home_dir().unwrap().to_str().unwrap().to_string();
-    format!("{}/repos", home_path)
+fn repos_folder_path() -> &'static String {
+    static REPOS_PATH: OnceLock<String> = OnceLock::new();
+
+    REPOS_PATH.get_or_init(|| format!("{}/repos", home_path()))
+}
+
+fn home_path() -> &'static String {
+    static HOME_PATH: OnceLock<String> = OnceLock::new();
+
+    HOME_PATH.get_or_init(|| {
+        dirs::home_dir()
+            .expect("failed to load home directory")
+            .to_str()
+            .unwrap()
+            .to_string()
+    })
 }
 
 fn main() {
@@ -202,9 +215,8 @@ function rcd() {
 ###end:repos_functions
             ";
 
-            let home_path = dirs::home_dir().unwrap().to_str().unwrap().to_string();
             // TODO: Support files other than zsh
-            let rc_file_path = format!("{}/.zshrc", &home_path);
+            let rc_file_path = format!("{}/.zshrc", home_path());
 
             let mut rc_file = OpenOptions::new()
                 .read(true)
