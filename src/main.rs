@@ -191,7 +191,7 @@ fn main() {
 # repos expand will return the path of the repo locally and this 
 # function will only be responsible for cd'ing into the folder if successful
 # or print the output if it fails.
-function r() {
+function rcd() {
     OUTPUT=$(repos expand $1)
     if [[ $? -eq 0 ]]; then
         cd $OUTPUT
