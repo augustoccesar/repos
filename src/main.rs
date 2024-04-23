@@ -157,14 +157,14 @@ struct Config {
 
 impl Config {
     pub fn load() -> Self {
+        ensure_repos_folder_exists();
+
         let path = config_file_path();
         let path = Path::new(&path);
 
         let data = if path.exists() {
             fs::read_to_string(path).unwrap()
         } else {
-            fs::create_dir_all(repos_folder_path()).unwrap();
-
             let data = "{\n}";
             let mut file = File::create(path).unwrap();
             file.write_all(data.as_bytes()).unwrap();
@@ -176,6 +176,8 @@ impl Config {
     }
 
     pub fn save(&mut self) {
+        ensure_repos_folder_exists();
+
         let mut config_file = fs::OpenOptions::new()
             .write(true)
             .truncate(true)
@@ -211,6 +213,14 @@ fn home_path() -> &'static String {
             .unwrap()
             .to_string()
     })
+}
+
+fn ensure_repos_folder_exists() {
+    if Path::new(repos_folder_path()).exists() {
+        return;
+    }
+
+    fs::create_dir_all(repos_folder_path()).unwrap();
 }
 
 fn main() {
