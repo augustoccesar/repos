@@ -26,12 +26,33 @@ struct ExpandCommandArgs {
 #[derive(Args)]
 struct InstallCommandArgs {}
 
+#[derive(Args, Debug)]
+struct ConfigCommandAddAliasArgs {
+    #[arg()]
+    alias: String,
+    #[arg()]
+    repo_name: String,
+}
+
+#[derive(Subcommand, Debug)]
+enum ConfigSubcommand {
+    AddAlias(ConfigCommandAddAliasArgs),
+}
+
+#[derive(Args, Debug)]
+struct ConfigCommandArgs {
+    #[command(subcommand)]
+    subcommand: ConfigSubcommand,
+}
+
 #[derive(Subcommand)]
 enum Command {
     #[command()]
     Expand(ExpandCommandArgs),
     #[command()]
     Install(InstallCommandArgs),
+    #[command()]
+    Config(ConfigCommandArgs),
 }
 
 #[derive(Debug)]
@@ -128,14 +149,13 @@ struct Config {
 
 impl Config {
     pub fn load() -> Self {
-        let folder_path = repos_folder_path();
-        let path = format!("{}/.config.json", &folder_path);
+        let path = config_file_path();
         let path = Path::new(&path);
 
         let data = if path.exists() {
             fs::read_to_string(path).unwrap()
         } else {
-            fs::create_dir_all(&folder_path).unwrap();
+            fs::create_dir_all(repos_folder_path()).unwrap();
 
             let data = "{\n}";
             let mut file = File::create(path).unwrap();
@@ -146,12 +166,31 @@ impl Config {
 
         serde_json::from_str(&data).unwrap()
     }
+
+    pub fn save(&mut self) {
+        let mut config_file = fs::OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(config_file_path())
+            .expect("failed to open config file");
+
+        let data = serde_json::to_string(self).expect("failed to serialize config as json");
+        config_file
+            .write_all(data.as_bytes())
+            .expect("failed to write config file");
+    }
 }
 
 fn repos_folder_path() -> &'static String {
     static REPOS_PATH: OnceLock<String> = OnceLock::new();
 
     REPOS_PATH.get_or_init(|| format!("{}/repos", home_path()))
+}
+
+fn config_file_path() -> &'static String {
+    static CONFIG_FILE_PATH: OnceLock<String> = OnceLock::new();
+
+    CONFIG_FILE_PATH.get_or_init(|| format!("{}/.config.json", repos_folder_path()))
 }
 
 fn home_path() -> &'static String {
@@ -240,6 +279,25 @@ function rcd() {
             println!("Installed!");
             println!("Run 'source ~/.zshrc' to reflect changes.");
             exit(0);
+        }
+        Command::Config(args) => {
+            let mut config = Config::load();
+
+            match args.subcommand {
+                ConfigSubcommand::AddAlias(add_alias) => {
+                    if let None = config.aliases {
+                        config.aliases = Some(HashMap::new());
+                    }
+
+                    config
+                        .aliases
+                        .as_mut()
+                        .unwrap()
+                        .insert(add_alias.alias, add_alias.repo_name);
+                }
+            }
+
+            config.save();
         }
     }
 }
