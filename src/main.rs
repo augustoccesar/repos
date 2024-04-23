@@ -167,10 +167,11 @@ fn home_path() -> &'static String {
 }
 
 fn main() {
-    //   - github.com/augustoccesar/adventofcode    -- default ssh
-    //   - augustoccesar/adventofcode               -- default github.com (overwrittable by config)
-    //   - adventofcode                             -- default github.com + whoami (overwrittable by config)
-    //   - aoc                                      -- configurable shortcut
+    //   - git@github.com:augustoccesar/adventofcode.git    -- as is. /git@(.+):(.+)\/(.+)\.git/
+    //   - github.com/augustoccesar/adventofcode            -- default ssh
+    //   - augustoccesar/adventofcode                       -- default github.com (overwrittable by config)
+    //   - adventofcode                                     -- default github.com + whoami (overwrittable by config)
+    //   - aoc                                              -- configurable shortcut
     let cli = Cli::parse();
     let config = Config::load();
 
