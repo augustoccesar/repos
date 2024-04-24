@@ -61,15 +61,8 @@ enum Command {
 }
 
 #[derive(Debug)]
-struct FullRepoName {
-    host: String,
-    username: String,
-    repo: String,
-}
-
-#[derive(Debug)]
 enum RepoName {
-    Full(FullRepoName),
+    Full(String, String, String),
     UserRepo(String, String),
     RepoOnly(String),
 }
@@ -77,14 +70,8 @@ enum RepoName {
 impl RepoName {
     pub fn local_path(&self, config: &Config) -> String {
         match self {
-            RepoName::Full(repo_name) => {
-                format!(
-                    "{}/repos/{}/{}/{}",
-                    home_path(),
-                    repo_name.host,
-                    repo_name.username,
-                    repo_name.repo
-                )
+            RepoName::Full(host, username, repo) => {
+                format!("{}/repos/{host}/{username}/{repo}", home_path(),)
             }
             RepoName::UserRepo(username, repo) => {
                 format!("{}/repos/github.com/{username}/{repo}", home_path())
@@ -110,8 +97,8 @@ impl RepoName {
     #[allow(dead_code)]
     pub fn clone_url(&self) -> String {
         match self {
-            RepoName::Full(info) => {
-                format!("git@{}:{}/{}.git", info.host, info.username, info.repo)
+            RepoName::Full(host, username, repo) => {
+                format!("git@{host}:{username}/{repo}.git")
             }
             RepoName::UserRepo(username, repo) => {
                 format!("git@github.com:{username}/{repo}.git")
@@ -133,11 +120,7 @@ impl TryFrom<&String> for RepoName {
                 let username = parts.get(1).unwrap().to_string();
                 let repo = parts.get(2).unwrap().to_string();
 
-                Ok(RepoName::Full(FullRepoName {
-                    host,
-                    username,
-                    repo,
-                }))
+                Ok(RepoName::Full(host, username, repo))
             }
             2 => Ok(RepoName::UserRepo(
                 parts.get(0).unwrap().to_string(),
