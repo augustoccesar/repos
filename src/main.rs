@@ -1,6 +1,7 @@
 // TODO: Error handling. Try to remove some of the .unwraps where it makes sense.
 // TODO: Replace hardcoded github.com hosts to be dynamic.
 // TODO: Maybe add an unistall command as well?
+// TODO: Add docs to the CLI parameters.
 
 use std::{
     collections::HashMap,
@@ -12,6 +13,7 @@ use std::{
 };
 
 use clap::{command, Args, Parser, Subcommand};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Parser)]
@@ -62,6 +64,7 @@ enum Command {
 
 #[derive(Debug)]
 enum RepoName {
+    CloneUrl(String),
     Full(String, String, String),
     UserRepo(String, String),
     RepoOnly(String),
@@ -70,6 +73,15 @@ enum RepoName {
 impl RepoName {
     pub fn local_path(&self, config: &Config) -> String {
         match self {
+            RepoName::CloneUrl(clone_url) => {
+                let captures = clone_url_regex().captures(clone_url).unwrap();
+
+                let host = captures.get(1).unwrap().as_str();
+                let username = captures.get(2).unwrap().as_str();
+                let repo = captures.get(3).unwrap().as_str();
+
+                format!("{}/repos/{host}/{username}/{repo}", home_path(),)
+            }
             RepoName::Full(host, username, repo) => {
                 format!("{}/repos/{host}/{username}/{repo}", home_path(),)
             }
@@ -97,6 +109,7 @@ impl RepoName {
     #[allow(dead_code)]
     pub fn clone_url(&self) -> String {
         match self {
+            RepoName::CloneUrl(clone_url) => clone_url.clone(),
             RepoName::Full(host, username, repo) => {
                 format!("git@{host}:{username}/{repo}.git")
             }
@@ -112,6 +125,10 @@ impl TryFrom<&String> for RepoName {
     type Error = String; // TODO: Better error type
 
     fn try_from(value: &String) -> Result<Self, Self::Error> {
+        if clone_url_regex().is_match(value) {
+            return Ok(RepoName::CloneUrl(value.clone()));
+        }
+
         let parts: Vec<&str> = value.split('/').collect();
 
         match parts.len() {
@@ -196,6 +213,13 @@ fn home_path() -> &'static String {
             .unwrap()
             .to_string()
     })
+}
+
+fn clone_url_regex() -> &'static Regex {
+    static CLONE_URL_REGEX: OnceLock<Regex> = OnceLock::new();
+
+    CLONE_URL_REGEX
+        .get_or_init(|| Regex::new(r"git@(.+):(.+)\/(.+)\.git").expect("failed to compile regex"))
 }
 
 fn ensure_repos_folder_exists() {
