@@ -1,5 +1,4 @@
 // TODO: Error handling. Try to remove some of the .unwraps where it makes sense.
-// TODO: Replace hardcoded github.com hosts to be dynamic.
 // TODO: Maybe add an unistall command as well?
 // TODO: Add docs to the CLI parameters.
 
@@ -292,11 +291,6 @@ fn clone_repo(repo_name: &RepoName, config: &Config) {
 }
 
 fn main() {
-    //   - git@github.com:augustoccesar/adventofcode.git    -- as is. /git@(.+):(.+)\/(.+)\.git/
-    //   - github.com/augustoccesar/adventofcode            -- default ssh
-    //   - augustoccesar/adventofcode                       -- default github.com (overwrittable by config)
-    //   - adventofcode                                     -- default github.com + whoami (overwrittable by config)
-    //   - aoc                                              -- configurable shortcut
     let cli = Cli::parse();
     let config = Config::load();
 
