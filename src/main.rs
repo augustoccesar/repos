@@ -1,7 +1,3 @@
-// TODO: Error handling. Try to remove some of the .unwraps where it makes sense.
-// TODO: Maybe add an unistall command as well?
-// TODO: Add docs to the CLI parameters.
-
 use std::{
     collections::HashMap,
     fs::{self, File, OpenOptions},
@@ -160,7 +156,7 @@ impl TryFrom<&String> for RepoName {
 
         match parts.len() {
             3 => {
-                let host = parts.get(0).unwrap().to_string(); // TODO: proper validate format of host.
+                let host = parts.get(0).unwrap().to_string();
                 let username = parts.get(1).unwrap().to_string();
                 let repo = parts.get(2).unwrap().to_string();
 
@@ -337,9 +333,8 @@ fn main() {
                 Err(_) => exit(1),
             }
 
-            // TODO: Support files other than zsh
+    
             let rc_file_path = format!("{}/{}", home_path(), rc_file_name);
-
             let mut rc_file = OpenOptions::new()
                 .read(true)
                 .write(true)
