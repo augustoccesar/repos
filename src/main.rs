@@ -301,16 +301,17 @@ fn main() {
                     let path = repo_name.local_path(&config);
                     let exists = Path::new(&path).exists();
 
-                    if exists {
-                        print!("{}", &path);
-                    } else {
+                    if !exists {
                         clone_repo(&repo_name, &config);
-                        print!("{}", &path);
                     }
 
+                    print!("{}", &path);
                     exit(0);
                 }
-                Err(_) => todo!(),
+                Err(e) => {
+                    eprintln!("{}", e);
+                    exit(1);
+                }
             }
         }
         Command::Setup(_) => {
