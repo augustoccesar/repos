@@ -105,10 +105,10 @@ impl RepoName {
 
                 format!("{home_path}/repos/{host}/{username}/{repo}")
             }
-            RepoName::RepoOnly(repo_name) => {
+            RepoName::RepoOnly(repo) => {
                 if let Some(aliases) = &config.aliases {
-                    if let Some(alias) = aliases.get(repo_name) {
-                        if alias == repo_name {
+                    if let Some(alias) = aliases.get(repo) {
+                        if alias == repo {
                             panic!("Infinite loop");
                         }
 
@@ -118,7 +118,11 @@ impl RepoName {
                     }
                 }
 
-                todo!()
+                let host = config.host();
+                let username = config.username();
+                let home_path = home_path();
+
+                format!("{home_path}/repos/{host}/{username}/{repo}")
             }
         }
     }
@@ -135,7 +139,12 @@ impl RepoName {
 
                 format!("git@{host}:{username}/{repo}.git")
             }
-            RepoName::RepoOnly(_) => todo!(),
+            RepoName::RepoOnly(repo) => {
+                let host = config.host();
+                let username = config.username();
+
+                format!("git@{host}:{username}/{repo}.git")
+            }
         }
     }
 }
