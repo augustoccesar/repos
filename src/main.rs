@@ -176,7 +176,6 @@ impl TryFrom<&String> for RepoName {
     }
 }
 
-// TODO: Create subcommand to manage this config
 #[derive(Serialize, Deserialize)]
 struct Config {
     aliases: Option<HashMap<String, String>>,
@@ -273,7 +272,6 @@ fn ensure_repos_folder_exists() {
     fs::create_dir_all(repos_folder_path()).unwrap();
 }
 
-// TODO: Can this dependency on Config be removed?
 fn clone_repo(repo_name: &RepoName, config: &Config) {
     let clone_url = repo_name.clone_url(config);
 
