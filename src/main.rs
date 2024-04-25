@@ -29,7 +29,7 @@ struct ExpandCommandArgs {
 }
 
 #[derive(Args)]
-struct InstallCommandArgs {}
+struct SetupCommandArgs {}
 
 #[derive(Args, Debug)]
 struct ConfigCommandAddAliasArgs {
@@ -70,7 +70,7 @@ enum Command {
     #[command()]
     Expand(ExpandCommandArgs),
     #[command()]
-    Install(InstallCommandArgs),
+    Setup(SetupCommandArgs),
     #[command()]
     Config(ConfigCommandArgs),
 }
@@ -315,23 +315,8 @@ fn main() {
                 Err(_) => todo!(),
             }
         }
-        Command::Install(_) => {
-            // TODO: Can format this nicer?
-            let function = "
-###begin:repos_functions
-# repos expand will return the path of the repo locally and this 
-# function will only be responsible for cd'ing into the folder if successful
-# or print the output if it fails.
-function rcd() {
-    OUTPUT=$(repos expand $1)
-    if [[ $? -eq 0 ]]; then
-        cd $OUTPUT
-    else
-        echo $OUTPUT
-    fi
-}
-###end:repos_functions
-            ";
+        Command::Setup(_) => {
+            let function = include_str!("../shell_setup");
 
             // TODO: Support files other than zsh
             let rc_file_path = format!("{}/.zshrc", home_path());
@@ -347,14 +332,14 @@ function rcd() {
             rc_file.read_to_string(&mut rc_file_data).unwrap();
 
             if let Some(_) = rc_file_data.find("###begin:repos_functions") {
-                println!("Already installed!");
+                println!("Already setup!");
                 exit(0);
             }
 
             rc_file.rewind().unwrap();
             rc_file.write_all(function.as_bytes()).unwrap();
 
-            println!("Installed!");
+            println!("Ready!");
             println!("Run 'source ~/.zshrc' to reflect changes.");
             exit(0);
         }
