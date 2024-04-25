@@ -122,7 +122,6 @@ impl RepoName {
         }
     }
 
-    #[allow(dead_code)]
     pub fn clone_url(&self, config: &Config) -> String {
         match self {
             RepoName::CloneUrl(clone_url) => clone_url.clone(),
@@ -156,17 +155,17 @@ impl TryFrom<&String> for RepoName {
 
         match parts.len() {
             3 => {
-                let host = parts.get(0).unwrap().to_string();
+                let host = parts.first().unwrap().to_string();
                 let username = parts.get(1).unwrap().to_string();
                 let repo = parts.get(2).unwrap().to_string();
 
                 Ok(RepoName::Full(host, username, repo))
             }
             2 => Ok(RepoName::UserRepo(
-                parts.get(0).unwrap().to_string(),
+                parts.first().unwrap().to_string(),
                 parts.get(1).unwrap().to_string(),
             )),
-            1 => Ok(RepoName::RepoOnly(parts.get(0).unwrap().to_string())),
+            1 => Ok(RepoName::RepoOnly(parts.first().unwrap().to_string())),
             _ => Err(String::from("Invalid repo name format.")),
         }
     }
@@ -333,7 +332,6 @@ fn main() {
                 Err(_) => exit(1),
             }
 
-    
             let rc_file_path = format!("{}/{}", home_path(), rc_file_name);
             let mut rc_file = OpenOptions::new()
                 .read(true)
@@ -345,7 +343,7 @@ fn main() {
             let mut rc_file_data = String::new();
             rc_file.read_to_string(&mut rc_file_data).unwrap();
 
-            if let Some(_) = rc_file_data.find("###begin:repos_functions") {
+            if rc_file_data.contains("###begin:repos_functions") {
                 println!("Already setup!");
                 exit(0);
             }
@@ -362,7 +360,7 @@ fn main() {
 
             match args.subcommand {
                 ConfigSubcommand::AddAlias(add_alias) => {
-                    if let None = config.aliases {
+                    if config.aliases.is_none() {
                         config.aliases = Some(HashMap::new());
                     }
 
