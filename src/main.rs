@@ -40,10 +40,24 @@ struct ConfigCommandAddAliasArgs {
     repo_name: String,
 }
 
+#[derive(Args, Debug)]
+struct ConfigCommandSetDefaultHostArgs {
+    #[arg()]
+    host: String,
+}
+
+#[derive(Args, Debug)]
+struct ConfigCommandSetDefaultUsernameArgs {
+    #[arg()]
+    username: String,
+}
+
 #[derive(Subcommand, Debug)]
 enum ConfigSubcommand {
     AddAlias(ConfigCommandAddAliasArgs),
     ListAliases,
+    SetDefaultHost(ConfigCommandSetDefaultHostArgs),
+    SetDefaultUsername(ConfigCommandSetDefaultUsernameArgs),
 }
 
 #[derive(Args, Debug)]
@@ -86,7 +100,10 @@ impl RepoName {
                 format!("{}/repos/{host}/{username}/{repo}", home_path(),)
             }
             RepoName::UserRepo(username, repo) => {
-                format!("{}/repos/github.com/{username}/{repo}", home_path())
+                let host = config.host();
+                let home_path = home_path();
+
+                format!("{home_path}/repos/{host}/{username}/{repo}")
             }
             RepoName::RepoOnly(repo_name) => {
                 if let Some(aliases) = &config.aliases {
@@ -107,14 +124,16 @@ impl RepoName {
     }
 
     #[allow(dead_code)]
-    pub fn clone_url(&self) -> String {
+    pub fn clone_url(&self, config: &Config) -> String {
         match self {
             RepoName::CloneUrl(clone_url) => clone_url.clone(),
             RepoName::Full(host, username, repo) => {
                 format!("git@{host}:{username}/{repo}.git")
             }
             RepoName::UserRepo(username, repo) => {
-                format!("git@github.com:{username}/{repo}.git")
+                let host = config.host();
+
+                format!("git@{host}:{username}/{repo}.git")
             }
             RepoName::RepoOnly(_) => todo!(),
         }
@@ -153,6 +172,8 @@ impl TryFrom<&String> for RepoName {
 #[derive(Serialize, Deserialize)]
 struct Config {
     aliases: Option<HashMap<String, String>>,
+    default_host: Option<String>,
+    default_username: Option<String>,
 }
 
 impl Config {
@@ -188,6 +209,20 @@ impl Config {
         config_file
             .write_all(data.as_bytes())
             .expect("failed to write config file");
+    }
+
+    pub fn host(&self) -> String {
+        match &self.default_host {
+            Some(host) => host.clone(),
+            None => String::from("github.com"),
+        }
+    }
+
+    pub fn username(&self) -> String {
+        match &self.default_username {
+            Some(username) => username.clone(),
+            None => whoami::username(),
+        }
     }
 }
 
@@ -232,7 +267,7 @@ fn ensure_repos_folder_exists() {
 
 // TODO: Can this dependency on Config be removed?
 fn clone_repo(repo_name: &RepoName, config: &Config) {
-    let clone_url = repo_name.clone_url();
+    let clone_url = repo_name.clone_url(config);
 
     let output = std::process::Command::new("git")
         .args(["clone", &clone_url, &repo_name.local_path(config)])
@@ -346,6 +381,14 @@ function rcd() {
                         println!("No aliases configured.");
                     }
                 },
+                ConfigSubcommand::SetDefaultHost(args) => {
+                    config.default_host = Some(args.host);
+                    config.save();
+                }
+                ConfigSubcommand::SetDefaultUsername(args) => {
+                    config.default_username = Some(args.username);
+                    config.save();
+                }
             }
 
             config.save();
