@@ -4,7 +4,7 @@ mod repo_name;
 
 use clap::{command, Parser, Subcommand};
 
-use commands::{ConfigCommandArgs, ExpandCommandArgs, SetupCommandArgs};
+use commands::{CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, SetupCommandArgs};
 use config::Config;
 
 #[derive(Parser)]
@@ -21,6 +21,8 @@ enum Command {
     Setup(SetupCommandArgs),
     #[command()]
     Config(ConfigCommandArgs),
+    #[command()]
+    Cleanup(CleanupCommandArgs),
 }
 
 fn main() {
@@ -31,5 +33,6 @@ fn main() {
         Command::Expand(args) => commands::expand(args, &config),
         Command::Setup(args) => commands::setup(args),
         Command::Config(args) => commands::config(args, &mut config),
+        Command::Cleanup(args) => commands::cleanup(args),
     }
 }

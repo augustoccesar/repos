@@ -1,4 +1,10 @@
-use std::{collections::HashMap, fs::{self, File}, io::Write, path::Path, sync::OnceLock};
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io::Write,
+    path::Path,
+    sync::OnceLock,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -81,6 +87,20 @@ pub fn home_path() -> &'static String {
             .unwrap()
             .to_string()
     })
+}
+
+pub fn rc_file_path() -> &'static String {
+    static RC_FILE_PATH: OnceLock<String> = OnceLock::new();
+
+    RC_FILE_PATH.get_or_init(|| format!("{}/.zshrc", home_path()))
+}
+
+pub fn shell_file_path() -> &'static String {
+    ensure_repos_folder_exists();
+
+    static SHELL_FILE_PATH: OnceLock<String> = OnceLock::new();
+
+    SHELL_FILE_PATH.get_or_init(|| format!("{}/.repos_shell", repos_folder_path()))
 }
 
 fn ensure_repos_folder_exists() {
