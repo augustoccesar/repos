@@ -36,13 +36,7 @@ impl RepoName {
             RepoName::RepoOnly(repo) => {
                 if let Some(aliases) = &config.aliases {
                     if let Some(alias) = aliases.get(repo) {
-                        if alias == repo {
-                            panic!("Infinite loop");
-                        }
-
-                        let alias_repo_name = RepoName::try_from(alias).unwrap();
-
-                        return alias_repo_name.local_path(config);
+                        return alias.clone();
                     }
                 }
 

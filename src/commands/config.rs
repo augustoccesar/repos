@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use clap::{Args, Subcommand};
 
-use crate::config::Config;
+use crate::{config::Config, repo_name::RepoName};
 
 #[derive(Args, Debug)]
 pub struct ConfigCommandArgs {
@@ -45,11 +45,15 @@ pub fn config(args: ConfigCommandArgs, config: &mut Config) {
                 config.aliases = Some(HashMap::new());
             }
 
+            let repo_name = RepoName::try_from(&add_alias.repo_name)
+                .unwrap()
+                .local_path(config);
+
             config
                 .aliases
                 .as_mut()
                 .unwrap()
-                .insert(add_alias.alias, add_alias.repo_name);
+                .insert(add_alias.alias, repo_name);
         }
         ConfigSubcommand::ListAliases => match &config.aliases {
             Some(aliases) => {
