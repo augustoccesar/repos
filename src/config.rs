@@ -8,6 +8,8 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
+use crate::Result;
+
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub aliases: Option<HashMap<String, String>>,
@@ -16,38 +18,39 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load() -> Self {
-        ensure_repos_folder_exists();
+    pub fn load() -> Result<Self> {
+        ensure_repos_folder_exists()?;
 
         let path = config_file_path();
         let path = Path::new(&path);
 
         let data = if path.exists() {
-            fs::read_to_string(path).unwrap()
+            fs::read_to_string(path)?
         } else {
             let data = "{\n}";
-            let mut file = File::create(path).unwrap();
-            file.write_all(data.as_bytes()).unwrap();
+            let mut file = File::create(path)?;
+            file.write_all(data.as_bytes())?;
 
             data.to_string()
         };
 
-        serde_json::from_str(&data).unwrap()
+        let parsed_data = serde_json::from_str(&data)?;
+
+        Ok(parsed_data)
     }
 
-    pub fn save(&mut self) {
-        ensure_repos_folder_exists();
+    pub fn save(&mut self) -> Result<()> {
+        ensure_repos_folder_exists()?;
 
         let mut config_file = fs::OpenOptions::new()
             .write(true)
             .truncate(true)
-            .open(config_file_path())
-            .expect("failed to open config file");
+            .open(config_file_path())?;
 
-        let data = serde_json::to_string(self).expect("failed to serialize config as json");
-        config_file
-            .write_all(data.as_bytes())
-            .expect("failed to write config file");
+        let data = serde_json::to_string(self)?;
+        config_file.write_all(data.as_bytes())?;
+
+        Ok(())
     }
 
     pub fn host(&self) -> String {
@@ -96,17 +99,19 @@ pub fn rc_file_path() -> &'static String {
 }
 
 pub fn shell_file_path() -> &'static String {
-    ensure_repos_folder_exists();
+    ensure_repos_folder_exists().expect("failed to verify existence of repos folder");
 
     static SHELL_FILE_PATH: OnceLock<String> = OnceLock::new();
 
     SHELL_FILE_PATH.get_or_init(|| format!("{}/.repos_shell", repos_folder_path()))
 }
 
-fn ensure_repos_folder_exists() {
+fn ensure_repos_folder_exists() -> Result<()> {
     if Path::new(repos_folder_path()).exists() {
-        return;
+        return Ok(());
     }
 
-    fs::create_dir_all(repos_folder_path()).unwrap();
+    fs::create_dir_all(repos_folder_path())?;
+
+    Ok(())
 }

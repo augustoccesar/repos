@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use clap::{Args, Subcommand};
 
-use crate::{config::Config, repo_name::RepoName};
+use crate::{config::Config, repo_name::RepoName, Result};
 
 #[derive(Args, Debug)]
 pub struct ConfigCommandArgs {
@@ -38,16 +38,14 @@ struct ConfigCommandSetDefaultUsernameArgs {
     username: String,
 }
 
-pub fn config(args: ConfigCommandArgs, config: &mut Config) {
+pub fn config(args: ConfigCommandArgs, config: &mut Config) -> Result<()> {
     match args.subcommand {
         ConfigSubcommand::AddAlias(add_alias) => {
             if config.aliases.is_none() {
                 config.aliases = Some(HashMap::new());
             }
 
-            let repo_name = RepoName::try_from(&add_alias.repo_name)
-                .unwrap()
-                .local_path(config);
+            let repo_name = RepoName::try_from(&add_alias.repo_name)?.local_path(config)?;
 
             config
                 .aliases
@@ -68,13 +66,15 @@ pub fn config(args: ConfigCommandArgs, config: &mut Config) {
         },
         ConfigSubcommand::SetDefaultHost(args) => {
             config.default_host = Some(args.host);
-            config.save();
+            config.save()?;
         }
         ConfigSubcommand::SetDefaultUsername(args) => {
             config.default_username = Some(args.username);
-            config.save();
+            config.save()?;
         }
     }
 
-    config.save();
+    config.save()?;
+
+    Ok(())
 }

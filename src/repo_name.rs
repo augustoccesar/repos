@@ -2,7 +2,10 @@ use std::sync::OnceLock;
 
 use regex::Regex;
 
-use crate::config::{home_path, Config};
+use crate::{
+    config::{home_path, Config},
+    Error, Result,
+};
 
 #[derive(Debug)]
 pub enum RepoName {
@@ -13,30 +16,33 @@ pub enum RepoName {
 }
 
 impl RepoName {
-    pub fn local_path(&self, config: &Config) -> String {
+    pub fn local_path(&self, config: &Config) -> Result<String> {
         match self {
             RepoName::CloneUrl(clone_url) => {
-                let captures = clone_url_regex().captures(clone_url).unwrap();
+                let captures = clone_url_regex().captures(clone_url);
 
-                let host = captures.get(1).unwrap().as_str();
-                let username = captures.get(2).unwrap().as_str();
-                let repo = captures.get(3).unwrap().as_str();
+                match captures {
+                    Some(captures) => {
+                        let (_, [host, username, repo]) = captures.extract();
 
-                format!("{}/repos/{host}/{username}/{repo}", home_path(),)
+                        Ok(format!("{}/repos/{host}/{username}/{repo}", home_path()))
+                    }
+                    None => Err("Invalid clone url format".into()),
+                }
             }
             RepoName::Full(host, username, repo) => {
-                format!("{}/repos/{host}/{username}/{repo}", home_path(),)
+                Ok(format!("{}/repos/{host}/{username}/{repo}", home_path()))
             }
             RepoName::UserRepo(username, repo) => {
                 let host = config.host();
                 let home_path = home_path();
 
-                format!("{home_path}/repos/{host}/{username}/{repo}")
+                Ok(format!("{home_path}/repos/{host}/{username}/{repo}"))
             }
             RepoName::RepoOnly(repo) => {
                 if let Some(aliases) = &config.aliases {
                     if let Some(alias) = aliases.get(repo) {
-                        return alias.clone();
+                        return Ok(alias.clone());
                     }
                 }
 
@@ -44,7 +50,7 @@ impl RepoName {
                 let username = config.username();
                 let home_path = home_path();
 
-                format!("{home_path}/repos/{host}/{username}/{repo}")
+                Ok(format!("{home_path}/repos/{host}/{username}/{repo}"))
             }
         }
     }
@@ -71,9 +77,9 @@ impl RepoName {
 }
 
 impl TryFrom<&String> for RepoName {
-    type Error = String; // TODO: Better error type
+    type Error = Error;
 
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
+    fn try_from(value: &String) -> std::result::Result<Self, Self::Error> {
         if clone_url_regex().is_match(value) {
             return Ok(RepoName::CloneUrl(value.clone()));
         }
@@ -93,7 +99,7 @@ impl TryFrom<&String> for RepoName {
                 parts.get(1).unwrap().to_string(),
             )),
             1 => Ok(RepoName::RepoOnly(parts.first().unwrap().to_string())),
-            _ => Err(String::from("Invalid repo name format.")),
+            _ => Err("Invalid repo name format.".into()),
         }
     }
 }
