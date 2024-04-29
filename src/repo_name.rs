@@ -2,10 +2,7 @@ use std::sync::OnceLock;
 
 use regex::Regex;
 
-use crate::{
-    config::{home_path, Config},
-    Error, Result,
-};
+use crate::{config::Config, Error, Result};
 
 #[derive(Debug)]
 pub enum RepoName {
@@ -25,17 +22,21 @@ impl RepoName {
                     Some(captures) => {
                         let (_, [host, username, repo]) = captures.extract();
 
-                        Ok(format!("{}/repos/{host}/{username}/{repo}", home_path()))
+                        Ok(format!(
+                            "{}/repos/{host}/{username}/{repo}",
+                            config.home_path()
+                        ))
                     }
                     None => Err("Invalid clone url format".into()),
                 }
             }
-            RepoName::Full(host, username, repo) => {
-                Ok(format!("{}/repos/{host}/{username}/{repo}", home_path()))
-            }
+            RepoName::Full(host, username, repo) => Ok(format!(
+                "{}/repos/{host}/{username}/{repo}",
+                config.home_path()
+            )),
             RepoName::UserRepo(username, repo) => {
                 let host = config.host();
-                let home_path = home_path();
+                let home_path = config.home_path();
 
                 Ok(format!("{home_path}/repos/{host}/{username}/{repo}"))
             }
@@ -48,7 +49,7 @@ impl RepoName {
 
                 let host = config.host();
                 let username = config.username();
-                let home_path = home_path();
+                let home_path = config.home_path();
 
                 Ok(format!("{home_path}/repos/{host}/{username}/{repo}"))
             }
@@ -109,4 +110,98 @@ fn clone_url_regex() -> &'static Regex {
 
     CLONE_URL_REGEX
         .get_or_init(|| Regex::new(r"git@(.+):(.+)\/(.+)\.git").expect("failed to compile regex"))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::{config::Config, repo_name::RepoName};
+
+    #[test]
+    fn local_path_from_clone_url_works() {
+        let config = Config {
+            aliases: Some(HashMap::new()),
+            default_host: Some(String::from("github.com")),
+            default_username: Some(String::from("username")),
+            home_path: Some(String::from("/Users/username")),
+        };
+        let clone_url = "git@github.com:rust-lang/rust.git";
+
+        let result = RepoName::CloneUrl(clone_url.into())
+            .local_path(&config)
+            .unwrap();
+
+        assert_eq!("/Users/username/repos/github.com/rust-lang/rust", result)
+    }
+
+    #[test]
+    fn local_path_from_full_works() {
+        let config = Config {
+            aliases: Some(HashMap::new()),
+            default_host: Some(String::from("github.com")),
+            default_username: Some(String::from("username")),
+            home_path: Some(String::from("/Users/username")),
+        };
+
+        let result = RepoName::Full("github.com".into(), "rust-lang".into(), "rust".into())
+            .local_path(&config)
+            .unwrap();
+
+        assert_eq!("/Users/username/repos/github.com/rust-lang/rust", result)
+    }
+
+    #[test]
+    fn local_path_from_user_repo_works() {
+        let config = Config {
+            aliases: Some(HashMap::new()),
+            default_host: Some(String::from("github.com")),
+            default_username: Some(String::from("username")),
+            home_path: Some(String::from("/Users/username")),
+        };
+
+        let result = RepoName::UserRepo("rust-lang".into(), "rust".into())
+            .local_path(&config)
+            .unwrap();
+
+        assert_eq!("/Users/username/repos/github.com/rust-lang/rust", result)
+    }
+
+    #[test]
+    fn local_path_from_repo_only_works() {
+        let config = Config {
+            aliases: Some(HashMap::new()),
+            default_host: Some(String::from("github.com")),
+            default_username: Some(String::from("augustoccesar")),
+            home_path: Some(String::from("/Users/username")),
+        };
+
+        let result = RepoName::RepoOnly("repos".into())
+            .local_path(&config)
+            .unwrap();
+
+        assert_eq!("/Users/username/repos/github.com/augustoccesar/repos", result)
+    }
+
+    #[test]
+    fn local_path_from_repo_only_with_alias_works() {
+        let mut aliases = HashMap::new();
+        aliases.insert(
+            String::from("r"),
+            String::from("/Users/username/repos/github.com/augustoccesar/repos"),
+        );
+
+        let config = Config {
+            aliases: Some(aliases),
+            default_host: Some(String::from("github.com")),
+            default_username: Some(String::from("username")),
+            home_path: Some(String::from("/Users/username")),
+        };
+
+        let result = RepoName::RepoOnly("r".into())
+            .local_path(&config)
+            .unwrap();
+
+        assert_eq!("/Users/username/repos/github.com/augustoccesar/repos", result)
+    }
 }

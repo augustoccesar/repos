@@ -15,6 +15,7 @@ pub struct Config {
     pub aliases: Option<HashMap<String, String>>,
     pub default_host: Option<String>,
     pub default_username: Option<String>,
+    pub home_path: Option<String>,
 }
 
 impl Config {
@@ -66,6 +67,13 @@ impl Config {
             None => whoami::username(),
         }
     }
+
+    pub fn home_path(&self) -> String {
+        match &self.home_path {
+            Some(home_path) => home_path.clone(),
+            None => home_path().clone(),
+        }
+    }
 }
 
 fn repos_folder_path() -> &'static String {
@@ -80,7 +88,7 @@ fn config_file_path() -> &'static String {
     CONFIG_FILE_PATH.get_or_init(|| format!("{}/.config.json", repos_folder_path()))
 }
 
-pub fn home_path() -> &'static String {
+fn home_path() -> &'static String {
     static HOME_PATH: OnceLock<String> = OnceLock::new();
 
     HOME_PATH.get_or_init(|| {
