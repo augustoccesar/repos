@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{io, path::Path};
 
 use clap::Args;
 
@@ -18,18 +18,31 @@ pub fn expand(args: ExpandCommandArgs, config: &Config) -> Result<()> {
     let exists = Path::new(&path).exists();
 
     if !exists {
-        clone_repo(&repo_name, config)?;
+        let clone_url = repo_name.clone_url(config);
+
+        let mut confirmation = String::new();
+        println!("Repo not found locally.");
+        println!("- Local path:\t{}", &path);
+        println!("- Git repo:\t{}", &clone_url);
+        println!("Do you want to clone it? (y/n - only 'y' continue)");
+
+        io::stdin().read_line(&mut confirmation)?;
+        if confirmation.trim() != "y" {
+            println!("Aborted!");
+            return Ok(());
+        }
+
+        println!("Cloning repo...");
+        clone_repo(&clone_url, &path)?;
     }
 
     print!("{}", &path);
     Ok(())
 }
 
-fn clone_repo(repo_name: &RepoName, config: &Config) -> Result<()> {
-    let clone_url = repo_name.clone_url(config);
-
+fn clone_repo(clone_url: &str, target_path: &str) -> Result<()> {
     let output = std::process::Command::new("git")
-        .args(["clone", &clone_url, &repo_name.local_path(config)?])
+        .args(["clone", clone_url, target_path])
         .output()?;
 
     if !output.status.success() {
