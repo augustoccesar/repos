@@ -9,6 +9,7 @@ use clap::Args;
 use crate::config::{rc_file_path, shell_file_path};
 use crate::Result;
 
+/// Setup helpers to make the use of repos easier. Namelly it adds shell script to make it
 #[derive(Args)]
 pub struct SetupCommandArgs {}
 

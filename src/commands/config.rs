@@ -4,6 +4,7 @@ use clap::{Args, Subcommand};
 
 use crate::{config::Config, repo_name::RepoName, Result};
 
+/// Handle the config file
 #[derive(Args, Debug)]
 pub struct ConfigCommandArgs {
     #[command(subcommand)]
@@ -18,20 +19,28 @@ enum ConfigSubcommand {
     SetDefaultUsername(ConfigCommandSetDefaultUsernameArgs),
 }
 
+/// Create an alias to a repo.
 #[derive(Args, Debug)]
 struct ConfigCommandAddAliasArgs {
+    /// Alias to a repo. E.g. rust
     #[arg()]
     alias: String,
+    /// Target of the alias. E.g. rust-lang/rust
+    ///
+    /// The saved target will always be the expanded version (whatever would
+    /// have been returned by the 'repos expand' command).
     #[arg()]
     repo_name: String,
 }
 
+/// Set a default host. If this is not set, it will default to "github.com"
 #[derive(Args, Debug)]
 struct ConfigCommandSetDefaultHostArgs {
     #[arg()]
     host: String,
 }
 
+/// Set a default username. If this is not set, it will default to whoami::username()
 #[derive(Args, Debug)]
 struct ConfigCommandSetDefaultUsernameArgs {
     #[arg()]

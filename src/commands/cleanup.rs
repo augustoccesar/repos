@@ -8,6 +8,7 @@ use clap::Args;
 use crate::config::{rc_file_path, shell_file_path};
 use crate::Result;
 
+/// Remove what has been set by the setup command
 #[derive(Args)]
 pub struct CleanupCommandArgs {}
 

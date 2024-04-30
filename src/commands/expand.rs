@@ -4,9 +4,27 @@ use clap::Args;
 
 use crate::{config::Config, repo_name::RepoName, Result};
 
+/// Expand the provided name into the full local path for the repository.
+/// It also prompts to clone it if is not found locally
 #[derive(Args)]
 pub struct ExpandCommandArgs {
     /// Repository name.
+    ///
+    /// For cases where the fields are not all present on the format, they will be resolved by:
+    ///
+    ///   host:
+    ///     1. What is on the `default_host` of the config.
+    ///     2. Default to "github.com".
+    ///
+    ///   username:
+    ///     1. What is on the `default_username` of the config.
+    ///     2. Default to whoami::username()
+    ///
+    /// Supported formats:
+    ///   - git@{host}:{username}/{repo}.git
+    ///   - {host}/{username}/{repo}
+    ///   - {username}/{repo}
+    ///   - {repo}
     #[arg(verbatim_doc_comment)]
     name: String,
 }
