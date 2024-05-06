@@ -1,6 +1,7 @@
 use std::{
-    fs::OpenOptions,
+    fs::{self, OpenOptions},
     io::{Read, Seek, Write},
+    path::Path,
 };
 
 use clap::Args;
@@ -34,12 +35,12 @@ pub fn cleanup(_: CleanupCommandArgs) -> Result<()> {
             rc_file.set_len(0)?;
             rc_file.rewind()?;
             rc_file.write_all(&clean_file)?;
+        }
+        None => (),
+    }
 
-            println!("Finished!");
-        }
-        None => {
-            println!("Nothing to cleanup!");
-        }
+    if Path::new(shell_file_path).exists() {
+        fs::remove_file(shell_file_path)?;
     }
 
     Ok(())
