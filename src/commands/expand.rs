@@ -2,7 +2,7 @@ use std::{io, path::Path};
 
 use clap::Args;
 
-use crate::{config::Config, repo_name::RepoName, Result};
+use crate::{config::Config, error::Error, repo_name::RepoName, Result};
 
 /// Expand the provided name into the full local path for the repository.
 /// It also prompts to clone it if is not found locally
@@ -64,10 +64,10 @@ fn clone_repo(clone_url: &str, target_path: &str) -> Result<()> {
         .output()?;
 
     if !output.status.success() {
-        return Err(format!(
+        return Err(Error::Clone(format!(
             "Failed to clone repo: {}",
             String::from_utf8_lossy(&output.stderr)
-        )
+        ))
         .into());
     }
 

@@ -31,12 +31,15 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let mut config = Config::load()?;
 
-    match cli.command {
-        Command::Expand(args) => commands::expand(args, &config)?,
-        Command::Setup(args) => commands::setup(args)?,
-        Command::Config(args) => commands::config(args, &mut config)?,
-        Command::Cleanup(args) => commands::cleanup(args)?,
-    }
+    let result = match cli.command {
+        Command::Expand(args) => commands::expand(args, &config),
+        Command::Setup(args) => commands::setup(args),
+        Command::Config(args) => commands::config(args, &mut config),
+        Command::Cleanup(args) => commands::cleanup(args),
+    };
 
-    Ok(())
+    match result {
+        Ok(_) => return Ok(()),
+        Err(err) => return Err(err),
+    }
 }

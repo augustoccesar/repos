@@ -27,7 +27,7 @@ impl RepoName {
                             config.home_path()
                         ))
                     }
-                    None => Err("Invalid clone url format".into()),
+                    None => Err(Error::Format("Invalid clone url format".into())),
                 }
             }
             RepoName::Full(host, username, repo) => Ok(format!(
@@ -100,7 +100,7 @@ impl TryFrom<&String> for RepoName {
                 parts.get(1).unwrap().to_string(),
             )),
             1 => Ok(RepoName::RepoOnly(parts.first().unwrap().to_string())),
-            _ => Err("Invalid repo name format.".into()),
+            _ => Err(Error::Format("Invalid repo name format.".into())),
         }
     }
 }
@@ -180,7 +180,10 @@ mod tests {
             .local_path(&config)
             .unwrap();
 
-        assert_eq!("/Users/username/repos/github.com/augustoccesar/repos", result)
+        assert_eq!(
+            "/Users/username/repos/github.com/augustoccesar/repos",
+            result
+        )
     }
 
     #[test]
@@ -198,10 +201,11 @@ mod tests {
             home_path: Some(String::from("/Users/username")),
         };
 
-        let result = RepoName::RepoOnly("r".into())
-            .local_path(&config)
-            .unwrap();
+        let result = RepoName::RepoOnly("r".into()).local_path(&config).unwrap();
 
-        assert_eq!("/Users/username/repos/github.com/augustoccesar/repos", result)
+        assert_eq!(
+            "/Users/username/repos/github.com/augustoccesar/repos",
+            result
+        )
     }
 }
