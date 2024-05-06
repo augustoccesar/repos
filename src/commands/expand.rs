@@ -46,8 +46,7 @@ pub fn expand(args: ExpandCommandArgs, config: &Config) -> Result<()> {
 
         io::stdin().read_line(&mut confirmation)?;
         if confirmation.trim() != "y" {
-            println!("Aborted!");
-            return Ok(());
+            return Err(Error::Aborted);
         }
 
         println!("Cloning repo...");

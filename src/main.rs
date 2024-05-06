@@ -3,11 +3,15 @@ mod config;
 mod error;
 mod repo_name;
 
+use std::process::exit;
+
 use clap::{command, Parser, Subcommand};
 
 use commands::{CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, SetupCommandArgs};
 use config::Config;
 use error::{Error, Result};
+
+const EXIT_STATUS_ABORTED: i32 = 1;
 
 #[derive(Parser)]
 struct Cli {
@@ -40,6 +44,12 @@ fn main() -> Result<()> {
 
     match result {
         Ok(_) => return Ok(()),
-        Err(err) => return Err(err),
+        Err(err) => match err {
+            Error::Aborted => {
+                println!("Aborted!");
+                exit(EXIT_STATUS_ABORTED);
+            }
+            err => return Err(err),
+        },
     }
 }

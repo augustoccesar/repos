@@ -6,7 +6,7 @@ use std::{
 
 use clap::Args;
 
-use crate::config::{rc_file_path, shell_file_path};
+use crate::{config::{rc_file_path, shell_file_path}, error::Error};
 use crate::Result;
 
 /// Setup helpers to make the use of repos easier. Namelly it adds shell script to make it
@@ -39,8 +39,7 @@ pub fn setup(_: SetupCommandArgs) -> Result<()> {
 
     io::stdin().read_line(&mut confirmation)?;
     if confirmation.trim() != "y" {
-        println!("Aborted!");
-        return Ok(());
+        return Err(Error::Aborted);
     }
 
     let mut rc_file = OpenOptions::new()

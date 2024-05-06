@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub enum Error {
+    Aborted,
     Clone(String),
     Format(String),
     Other(Box<dyn std::error::Error>),
