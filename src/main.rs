@@ -12,6 +12,7 @@ use config::Config;
 use error::{Error, Result};
 
 const EXIT_STATUS_ABORTED: i32 = 1;
+const EXIT_STATUS_NEED_CLONE: i32 = 8;
 
 #[derive(Parser)]
 struct Cli {
@@ -48,6 +49,9 @@ fn main() -> Result<()> {
             Error::Aborted => {
                 println!("Aborted!");
                 exit(EXIT_STATUS_ABORTED);
+            },
+            Error::NotFound => {
+                exit(EXIT_STATUS_NEED_CLONE);
             }
             err => return Err(err),
         },

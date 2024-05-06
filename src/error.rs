@@ -3,6 +3,7 @@ pub enum Error {
     Aborted,
     Clone(String),
     Format(String),
+    NotFound,
     Other(Box<dyn std::error::Error>),
 }
 

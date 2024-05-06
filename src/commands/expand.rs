@@ -27,6 +27,10 @@ pub struct ExpandCommandArgs {
     ///   - {repo}
     #[arg(verbatim_doc_comment)]
     name: String,
+
+    /// If should clone the repo if not found locally.
+    #[arg(long, default_value = "false")]
+    clone: bool,
 }
 
 pub fn expand(args: ExpandCommandArgs, config: &Config) -> Result<()> {
@@ -38,19 +42,26 @@ pub fn expand(args: ExpandCommandArgs, config: &Config) -> Result<()> {
     if !exists {
         let clone_url = repo_name.clone_url(config);
 
-        let mut confirmation = String::new();
-        println!("Repo not found locally.");
-        println!("- Local path:\t{}", &path);
-        println!("- Git repo:\t{}", &clone_url);
-        println!("Do you want to clone it? (y/n - only 'y' continue)");
+        if args.clone {
+            let mut confirmation = String::new();
+            println!("Repo not found locally.");
+            println!("- Local path:\t{}", &path);
+            println!("- Git repo:\t{}", &clone_url);
+            println!("Do you want to clone it? (y/n - only 'y' continue)");
 
-        io::stdin().read_line(&mut confirmation)?;
-        if confirmation.trim() != "y" {
-            return Err(Error::Aborted);
+            io::stdin().read_line(&mut confirmation)?;
+            if confirmation.trim() != "y" {
+                return Err(Error::Aborted);
+            }
+
+            println!("Cloning repo...");
+            clone_repo(&clone_url, &path)?;
+        } else {
+            println!("Repo not found locally in {}.", &path);
+            println!("Run with --clone if want to clone it.");
+
+            return Err(Error::NotFound);
         }
-
-        println!("Cloning repo...");
-        clone_repo(&clone_url, &path)?;
     }
 
     print!("{}", &path);
