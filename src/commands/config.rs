@@ -60,7 +60,10 @@ pub fn config(args: ConfigCommandArgs, config: &mut Config) -> Result<()> {
                 .aliases
                 .as_mut()
                 .unwrap()
-                .insert(add_alias.alias, repo_name);
+                .insert(add_alias.alias.clone(), repo_name.clone());
+
+            println!("Alias added:");
+            println!("  {} => {}", add_alias.alias, repo_name);
         }
         ConfigSubcommand::ListAliases => match &config.aliases {
             Some(aliases) => {
