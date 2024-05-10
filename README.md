@@ -10,7 +10,7 @@ The `expand` command will return the path to the repository locally. If the repo
 does not exist locally, it will show you that and prompt to do the expand with the `--clone`
 argument, which will clone the repository and after that, it will be able to expand it.
 
-```bash
+```console
 $ repos expand rust-lang/rust
 Repo not found locally in /Users/username/repos/github.com/rust-lang/rust.
 Run with --clone if want to clone it.
@@ -48,7 +48,7 @@ formats:
 
 You can add an alias to an expand so that it is easier to access
 
-```bash
+```console
 $ repos config add-alias rust rust-lang/rust
 Alias added:
   rust => /Users/username/repos/github.com/rust-lang/rust
@@ -56,7 +56,7 @@ Alias added:
 
 So now when you run `expand` it will point to the alias
 
-```bash
+```console
 $ repos expand rust
 /Users/username/repos/github.com/rust-lang/rust%
 ```
@@ -67,7 +67,7 @@ To conveniently be able to `cd` into the expanded repository, `repos` have an op
 to `setup` a bash script so that you can automatically `cd` into the expanded repository.
 Like such:
 
-````bash
+````console
 $ repos setup
 Setup will add the following to to your /Users/username/.zshrc file
 ```
