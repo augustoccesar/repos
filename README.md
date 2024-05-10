@@ -87,6 +87,8 @@ $ rcd rust
 
 The `.repos_shell` content can be seen on [shell_setup](shell_setup).
 
+The changes of this action can be reversed with `repos cleanup`.
+
 ### Config
 As of now, some of the configuration file can be managed via the `repos config`. But not all of it.
 For example, `home_path` can be set on the `$REPOS_PATH/.config.json`, but is not managed via the config
