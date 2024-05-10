@@ -58,7 +58,7 @@ pub fn setup(_: SetupCommandArgs) -> Result<()> {
     rc_file.write_all(shell_setup.as_bytes())?;
 
     println!("Ready!");
-    println!("Run source your '{}' to reflect changes.", rc_file_path);
+    println!("Run 'source {}' to reflect changes.", rc_file_path);
 
     Ok(())
 }

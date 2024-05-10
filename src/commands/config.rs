@@ -13,13 +13,16 @@ pub struct ConfigCommandArgs {
 
 #[derive(Subcommand, Debug)]
 enum ConfigSubcommand {
+    /// Create an alias to a repo.
     AddAlias(ConfigCommandAddAliasArgs),
+    /// List all configured aliases.
     ListAliases,
+    /// Set a default host. If this is not set, it will default to "github.com"
     SetDefaultHost(ConfigCommandSetDefaultHostArgs),
+    /// Set a default username. If this is not set, it will default to whoami::username()
     SetDefaultUsername(ConfigCommandSetDefaultUsernameArgs),
 }
 
-/// Create an alias to a repo.
 #[derive(Args, Debug)]
 struct ConfigCommandAddAliasArgs {
     /// Alias to a repo. E.g. rust
@@ -33,14 +36,12 @@ struct ConfigCommandAddAliasArgs {
     repo_name: String,
 }
 
-/// Set a default host. If this is not set, it will default to "github.com"
 #[derive(Args, Debug)]
 struct ConfigCommandSetDefaultHostArgs {
     #[arg()]
     host: String,
 }
 
-/// Set a default username. If this is not set, it will default to whoami::username()
 #[derive(Args, Debug)]
 struct ConfigCommandSetDefaultUsernameArgs {
     #[arg()]
