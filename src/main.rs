@@ -58,7 +58,7 @@ fn main() -> Result<()> {
             Error::Aborted => {
                 println!("Aborted!");
                 exit(EXIT_STATUS_ABORTED);
-            },
+            }
             Error::NotFound => {
                 exit(EXIT_STATUS_NEED_CLONE);
             }
