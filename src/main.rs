@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     };
 
     match result {
-        Ok(_) => return Ok(()),
+        Ok(_) => Ok(()),
         Err(err) => match err {
             Error::Aborted => {
                 println!("Aborted!");
@@ -62,7 +62,7 @@ fn main() -> Result<()> {
             Error::NotFound => {
                 exit(EXIT_STATUS_NEED_CLONE);
             }
-            err => return Err(err),
+            err => Err(err),
         },
     }
 }

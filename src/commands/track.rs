@@ -15,8 +15,7 @@ pub fn track(_: TrackCommandArgs, config: &Config) -> Result<()> {
         return Err(Error::Track(format!(
             "Failed to get remote url of the repo: {}",
             String::from_utf8_lossy(&output.stderr)
-        ))
-        .into());
+        )));
     }
 
     let current_dir = current_dir()?.to_str().unwrap().to_string();
@@ -39,8 +38,7 @@ pub fn track(_: TrackCommandArgs, config: &Config) -> Result<()> {
         return Err(Error::Track(format!(
             "Failed move repo to new directory: {}",
             String::from_utf8_lossy(&output.stderr)
-        ))
-        .into());
+        )));
     }
 
     println!("{}", new_dir);

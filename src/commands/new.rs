@@ -22,8 +22,7 @@ pub fn new(args: NewCommandArgs) -> Result<()> {
         return Err(Error::Init(format!(
             "Failed to init repo: {}",
             String::from_utf8_lossy(&output.stderr)
-        ))
-        .into());
+        )));
     }
 
     println!("{}", new_project_path.to_str().unwrap());
