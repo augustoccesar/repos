@@ -9,6 +9,7 @@ use clap::{command, Parser, Subcommand};
 
 use commands::{
     CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, NewCommandArgs, SetupCommandArgs,
+    TrackCommandArgs,
 };
 use config::Config;
 use error::{Error, Result};
@@ -34,6 +35,8 @@ enum Command {
     Cleanup(CleanupCommandArgs),
     #[command()]
     New(NewCommandArgs),
+    #[command()]
+    Track(TrackCommandArgs),
 }
 
 fn main() -> Result<()> {
@@ -46,6 +49,7 @@ fn main() -> Result<()> {
         Command::Config(args) => commands::config(args, &mut config),
         Command::Cleanup(args) => commands::cleanup(args),
         Command::New(args) => commands::new(args),
+        Command::Track(args) => commands::track(args, &config),
     };
 
     match result {
