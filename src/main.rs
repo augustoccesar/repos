@@ -7,7 +7,9 @@ use std::process::exit;
 
 use clap::{command, Parser, Subcommand};
 
-use commands::{CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, SetupCommandArgs};
+use commands::{
+    CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, NewCommandArgs, SetupCommandArgs,
+};
 use config::Config;
 use error::{Error, Result};
 
@@ -30,6 +32,8 @@ enum Command {
     Config(ConfigCommandArgs),
     #[command()]
     Cleanup(CleanupCommandArgs),
+    #[command()]
+    New(NewCommandArgs),
 }
 
 fn main() -> Result<()> {
@@ -41,6 +45,7 @@ fn main() -> Result<()> {
         Command::Setup(args) => commands::setup(args),
         Command::Config(args) => commands::config(args, &mut config),
         Command::Cleanup(args) => commands::cleanup(args),
+        Command::New(args) => commands::new(args),
     };
 
     match result {
