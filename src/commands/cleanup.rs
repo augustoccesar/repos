@@ -25,18 +25,15 @@ pub fn cleanup(_: CleanupCommandArgs) -> Result<()> {
     let shell_file_path = shell_file_path();
     let lookup = format!(". {shell_file_path}");
 
-    match rc_file_data.find(&lookup) {
-        Some(start_index) => {
-            let end_index = start_index + lookup.len();
+    if let Some(start_index) = rc_file_data.find(&lookup) {
+        let end_index = start_index + lookup.len();
 
-            let file_bytes = rc_file_data.as_bytes();
-            let clean_file = [&file_bytes[0..start_index], &file_bytes[end_index..]].concat();
+        let file_bytes = rc_file_data.as_bytes();
+        let clean_file = [&file_bytes[0..start_index], &file_bytes[end_index..]].concat();
 
-            rc_file.set_len(0)?;
-            rc_file.rewind()?;
-            rc_file.write_all(&clean_file)?;
-        }
-        None => (),
+        rc_file.set_len(0)?;
+        rc_file.rewind()?;
+        rc_file.write_all(&clean_file)?;
     }
 
     if Path::new(shell_file_path).exists() {

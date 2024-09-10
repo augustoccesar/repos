@@ -10,6 +10,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::Result;
 
+static REPOS_PATH: OnceLock<String> = OnceLock::new();
+static CONFIG_FILE_PATH: OnceLock<String> = OnceLock::new();
+static HOME_PATH: OnceLock<String> = OnceLock::new();
+static RC_FILE_PATH: OnceLock<String> = OnceLock::new();
+static SHELL_FILE_PATH: OnceLock<String> = OnceLock::new();
+
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub aliases: Option<HashMap<String, String>>,
@@ -76,21 +82,15 @@ impl Config {
     }
 }
 
-fn repos_folder_path() -> &'static String {
-    static REPOS_PATH: OnceLock<String> = OnceLock::new();
-
+pub fn repos_folder_path() -> &'static String {
     REPOS_PATH.get_or_init(|| format!("{}/repos", home_path()))
 }
 
 fn config_file_path() -> &'static String {
-    static CONFIG_FILE_PATH: OnceLock<String> = OnceLock::new();
-
     CONFIG_FILE_PATH.get_or_init(|| format!("{}/.config.json", repos_folder_path()))
 }
 
 fn home_path() -> &'static String {
-    static HOME_PATH: OnceLock<String> = OnceLock::new();
-
     HOME_PATH.get_or_init(|| {
         dirs::home_dir()
             .expect("failed to load home directory")
@@ -101,15 +101,11 @@ fn home_path() -> &'static String {
 }
 
 pub fn rc_file_path() -> &'static String {
-    static RC_FILE_PATH: OnceLock<String> = OnceLock::new();
-
     RC_FILE_PATH.get_or_init(|| format!("{}/.zshrc", home_path()))
 }
 
 pub fn shell_file_path() -> &'static String {
     ensure_repos_folder_exists().expect("failed to verify existence of repos folder");
-
-    static SHELL_FILE_PATH: OnceLock<String> = OnceLock::new();
 
     SHELL_FILE_PATH.get_or_init(|| format!("{}/.repos_shell", repos_folder_path()))
 }

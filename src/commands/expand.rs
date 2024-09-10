@@ -77,8 +77,7 @@ fn clone_repo(clone_url: &str, target_path: &str) -> Result<()> {
         return Err(Error::Clone(format!(
             "Failed to clone repo: {}",
             String::from_utf8_lossy(&output.stderr)
-        ))
-        .into());
+        )));
     }
 
     Ok(())

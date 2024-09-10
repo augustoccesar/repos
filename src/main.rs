@@ -7,7 +7,10 @@ use std::process::exit;
 
 use clap::{command, Parser, Subcommand};
 
-use commands::{CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, SetupCommandArgs};
+use commands::{
+    CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, NewCommandArgs, SetupCommandArgs,
+    TrackCommandArgs,
+};
 use config::Config;
 use error::{Error, Result};
 
@@ -30,6 +33,10 @@ enum Command {
     Config(ConfigCommandArgs),
     #[command()]
     Cleanup(CleanupCommandArgs),
+    #[command()]
+    New(NewCommandArgs),
+    #[command()]
+    Track(TrackCommandArgs),
 }
 
 fn main() -> Result<()> {
@@ -41,19 +48,21 @@ fn main() -> Result<()> {
         Command::Setup(args) => commands::setup(args),
         Command::Config(args) => commands::config(args, &mut config),
         Command::Cleanup(args) => commands::cleanup(args),
+        Command::New(args) => commands::new(args),
+        Command::Track(args) => commands::track(args, &config),
     };
 
     match result {
-        Ok(_) => return Ok(()),
+        Ok(_) => Ok(()),
         Err(err) => match err {
             Error::Aborted => {
                 println!("Aborted!");
                 exit(EXIT_STATUS_ABORTED);
-            },
+            }
             Error::NotFound => {
                 exit(EXIT_STATUS_NEED_CLONE);
             }
-            err => return Err(err),
+            err => Err(err),
         },
     }
 }
