@@ -2,6 +2,7 @@ mod commands;
 mod config;
 mod error;
 mod repo_name;
+mod shell;
 
 use std::process::exit;
 

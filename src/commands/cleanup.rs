@@ -6,7 +6,7 @@ use std::{
 
 use clap::Args;
 
-use crate::config::{rc_file_path, shell_file_path};
+use crate::config::{profile_file_path, shell_file_path};
 use crate::Result;
 
 /// Remove what has been set by the setup command
@@ -17,7 +17,7 @@ pub fn cleanup(_: CleanupCommandArgs) -> Result<()> {
     let mut rc_file = OpenOptions::new()
         .read(true)
         .write(true)
-        .open(rc_file_path())?;
+        .open(profile_file_path())?;
 
     let mut rc_file_data = String::new();
     rc_file.read_to_string(&mut rc_file_data)?;

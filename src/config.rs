@@ -8,7 +8,10 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::Result;
+use crate::{shell, Result};
+
+const DEFAULT_SHELL_FILE_DATA: &str = include_str!("../repos.sh.default");
+const FISH_SHELL_FILE_DATA: &str = include_str!("../repos.sh.fish");
 
 static REPOS_PATH: OnceLock<String> = OnceLock::new();
 static CONFIG_FILE_PATH: OnceLock<String> = OnceLock::new();
@@ -100,14 +103,38 @@ fn home_path() -> &'static String {
     })
 }
 
-pub fn rc_file_path() -> &'static String {
-    RC_FILE_PATH.get_or_init(|| format!("{}/.zshrc", home_path()))
+pub fn profile_file_path() -> &'static str {
+    RC_FILE_PATH.get_or_init(|| {
+        let home_path = home_path();
+
+        let profile_file_name = match shell::Shell::from_env() {
+            shell::Shell::Zsh => ".zshrc",
+            shell::Shell::Fish => ".config/fish/config.fish",
+            shell::Shell::Other => ".profile",
+        };
+
+        format!("{}/{}", home_path, profile_file_name)
+    })
 }
 
-pub fn shell_file_path() -> &'static String {
+pub fn shell_file_path() -> &'static str {
     ensure_repos_folder_exists().expect("failed to verify existence of repos folder");
 
-    SHELL_FILE_PATH.get_or_init(|| format!("{}/.repos_shell", repos_folder_path()))
+    SHELL_FILE_PATH.get_or_init(|| {
+        let script_file_name = match shell::Shell::from_env() {
+            shell::Shell::Fish => "repos.sh.fish",
+            _ => "repos.sh.default",
+        };
+
+        format!("{}/.{}", repos_folder_path(), script_file_name)
+    })
+}
+
+pub fn shell_file_data() -> &'static str {
+    match shell::Shell::from_env() {
+        shell::Shell::Fish => FISH_SHELL_FILE_DATA,
+        _ => DEFAULT_SHELL_FILE_DATA,
+    }
 }
 
 fn ensure_repos_folder_exists() -> Result<()> {
