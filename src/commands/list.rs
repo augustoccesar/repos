@@ -37,17 +37,8 @@ fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
 
     line.push_str(&folder_name);
 
-    // if folder.is_root {
-    //     print!("{}", folder_name);
-    // } else if is_last {
-    //     print!("{}└ {}", prefix, folder_name);
-    // } else {
-    //     print!("{}├ {}", prefix, folder_name);
-    // }
-
     if let (true, Some(alias)) = (folder.is_repo, &folder.alias) {
         line.push_str(&format!(" (alias: {})", &alias));
-        // print!(" (alias: {})", &alias);
     }
 
     println!("{}", line);
