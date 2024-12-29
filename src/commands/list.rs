@@ -25,19 +25,32 @@ fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
         .unwrap()
         .to_string();
 
-    if folder.is_root {
-        print!("{}", folder_name);
-    } else if is_last {
-        print!("{}└ {}", prefix, folder_name);
-    } else {
-        print!("{}├ {}", prefix, folder_name);
+    let mut line = String::from(prefix);
+
+    if !folder.is_root {
+        if is_last {
+            line.push_str("└ ");
+        } else {
+            line.push_str("├ ");
+        }
     }
+
+    line.push_str(&folder_name);
+
+    // if folder.is_root {
+    //     print!("{}", folder_name);
+    // } else if is_last {
+    //     print!("{}└ {}", prefix, folder_name);
+    // } else {
+    //     print!("{}├ {}", prefix, folder_name);
+    // }
 
     if let (true, Some(alias)) = (folder.is_repo, &folder.alias) {
-        print!(" (alias: {})", &alias);
+        line.push_str(&format!(" (alias: {})", &alias));
+        // print!(" (alias: {})", &alias);
     }
 
-    println!();
+    println!("{}", line);
 
     for (i, subfolder) in folder.sub_folders.iter().enumerate() {
         let mut new_prefix = String::from(prefix);
