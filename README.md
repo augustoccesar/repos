@@ -64,28 +64,10 @@ $ repos expand rust
 For more details about things that are configurable, check `repos config --help`.
 
 To conveniently be able to `cd` into the expanded repository, `repos` have an option
-to `setup` a bash script so that you can automatically `cd` into the expanded repository.
-Like such:
+to `setup` a shell script so that you can automatically `cd` into the expanded repository.
 
-````console
-$ repos setup
-Setup will add the following to to your /Users/username/.zshrc file
-```
-
-. /Users/username/repos/.repos_shell
-
-```
-Do you want to continue? (y/n - only 'y' continue)
-y
-Ready!
-Run 'source /Users/username/.zshrc' to reflect changes.
-
-$ source /Users/username/.zshrc
-
-$ rcd rust
-````
-
-The `.repos_shell` content can be seen on [shell_setup](shell_setup).
+After running the setup, you should be able to run something like `rcd rust-lang/rust`, which
+is equivalent to `cd $(repos expand rust-lang/rust)`.
 
 The changes of this action can be reversed with `repos cleanup`.
 
