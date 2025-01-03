@@ -6,10 +6,17 @@ use crate::{
 };
 
 #[derive(clap::Args)]
-pub struct Args {}
+pub struct Args {
+    #[arg(short, long)]
+    filter: Option<String>,
+}
 
-pub fn list(_args: &Args, config: &Config) -> Result<()> {
-    let root = Folder::root().visit(config);
+pub fn list(args: &Args, config: &Config) -> Result<()> {
+    let mut root = Folder::root().visit(config);
+
+    if args.filter.is_some() {
+        root.apply_filter(args.filter.as_ref().unwrap());
+    }
 
     print_folder(&root, "", true);
 
@@ -59,7 +66,7 @@ fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Folder {
     path: PathBuf,
     is_root: bool,
@@ -111,5 +118,38 @@ impl Folder {
         }
 
         self
+    }
+
+    // TODO(augustoccesar)[2025-01-03]:
+    //   This can probably be more efficient. Would it be better to do this instead?
+    //     1. Get all folders and subfolders but do not build the nested folders. Just have them all flat on an array.
+    //     2. Filter out any that does not match.
+    //     3. Build the sub folders.
+    fn apply_filter(&mut self, filter: &str) {
+        if self.path.display().to_string().contains(filter) {
+            return;
+        }
+
+        if !self.sub_folders.is_empty() {
+            let mut new_subfolders = Vec::with_capacity(self.sub_folders.len());
+
+            for i in 0..self.sub_folders.len() {
+                let sub_folder = &mut self.sub_folders[i];
+
+                if sub_folder.sub_folders.is_empty() {
+                    if sub_folder.path.display().to_string().contains(filter) {
+                        new_subfolders.push(sub_folder.clone());
+                    }
+                } else {
+                    sub_folder.apply_filter(filter);
+
+                    if !sub_folder.sub_folders.is_empty() {
+                        new_subfolders.push(sub_folder.clone());
+                    }
+                }
+            }
+
+            self.sub_folders = new_subfolders;
+        }
     }
 }
