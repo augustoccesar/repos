@@ -85,7 +85,7 @@ impl Config {
     }
 }
 
-pub fn repos_folder_path() -> &'static String {
+pub fn repos_folder_path() -> &'static str {
     REPOS_PATH.get_or_init(|| format!("{}/repos", home_path()))
 }
 

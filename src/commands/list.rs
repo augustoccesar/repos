@@ -24,8 +24,7 @@ pub fn list(args: &Args, config: &Config) -> Result<()> {
 }
 
 fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
-    let folder_name = folder
-        .path
+    let folder_name = PathBuf::from(&folder.path)
         .file_name()
         .unwrap()
         .to_str()
@@ -68,7 +67,8 @@ fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
 
 #[derive(Debug, Default, Clone)]
 struct Folder {
-    path: PathBuf,
+    path: String,
+    path_from_base: String,
     is_root: bool,
     is_repo: bool,
     alias: Option<String>,
@@ -77,8 +77,16 @@ struct Folder {
 
 impl Folder {
     fn new(path: PathBuf, is_repo: bool, alias: Option<String>) -> Self {
+        let path = path.display().to_string();
+
+        let path_from_base = path
+            .strip_prefix(repos_folder_path())
+            .map(String::from)
+            .unwrap_or(path.clone());
+
         Self {
             path,
+            path_from_base,
             is_repo,
             alias,
             ..Default::default()
@@ -86,8 +94,16 @@ impl Folder {
     }
 
     fn root() -> Self {
+        let path = repos_folder_path().to_string();
+
+        let path_from_base = path
+            .strip_prefix(repos_folder_path())
+            .map(String::from)
+            .unwrap_or(path.clone());
+
         Self {
-            path: PathBuf::from(&repos_folder_path()),
+            path,
+            path_from_base,
             is_root: true,
             ..Default::default()
         }
@@ -126,7 +142,7 @@ impl Folder {
     //     2. Filter out any that does not match.
     //     3. Build the sub folders.
     fn apply_filter(&mut self, filter: &str) {
-        if self.path.display().to_string().contains(filter) {
+        if self.path_from_base.contains(filter) {
             return;
         }
 
@@ -137,7 +153,7 @@ impl Folder {
                 let sub_folder = &mut self.sub_folders[i];
 
                 if sub_folder.sub_folders.is_empty() {
-                    if sub_folder.path.display().to_string().contains(filter) {
+                    if sub_folder.path_from_base.contains(filter) {
                         new_subfolders.push(sub_folder.clone());
                     }
                 } else {
