@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+    id 'org.graalvm.buildtools.native' version '0.10.4'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+application {
+    mainClass = 'se.augustocesar.repos.Repos'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = "repos"
+            mainClass = "se.augustocesar.repos.Repos"
+            buildArgs.add("-Os")
+        }
+    }
+}
