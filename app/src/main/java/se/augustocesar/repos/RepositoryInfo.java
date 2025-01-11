@@ -1,5 +1,6 @@
 package se.augustocesar.repos;
 
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 public record RepositoryInfo(String host, String username, String name) {
@@ -24,5 +25,9 @@ public record RepositoryInfo(String host, String username, String name) {
         } else {
             return new RepositoryInfo(config.host(), config.username(), input);
         }
+    }
+
+    public String localPath() {
+        return Path.of(Constants.REPOS_DIR_PATH, this.host, this.username, this.name).toString();
     }
 }
