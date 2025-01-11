@@ -38,7 +38,10 @@ public class Expand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.out.println(RepositoryInfo.of(this.config, this.name));
+        var info = RepositoryInfo.of(this.config, this.name);
+
+        System.out.println(info);
+        System.out.println(info.localPath());
 
         return 0;
     }
