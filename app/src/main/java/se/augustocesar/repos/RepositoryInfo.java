@@ -6,7 +6,7 @@ public record RepositoryInfo(String host, String username, String name) {
 
     static final Pattern FULL_GIT = Pattern.compile("^git@(.+):(.+)\\/(.+).git$");
 
-    public static RepositoryInfo of(String input) {
+    public static RepositoryInfo of(Config config, String input) {
         var fullGitMatcher = FULL_GIT.matcher(input);
         if (fullGitMatcher.matches()) {
             var host = fullGitMatcher.group(1);
@@ -20,9 +20,9 @@ public record RepositoryInfo(String host, String username, String name) {
         if (tokens.length == 3) {
             return new RepositoryInfo(tokens[0], tokens[1], tokens[2]);
         } else if (tokens.length == 2) {
-            return new RepositoryInfo(Defaults.host(), tokens[0], tokens[1]);
+            return new RepositoryInfo(config.host(), tokens[0], tokens[1]);
         } else {
-            return new RepositoryInfo(Defaults.host(), Defaults.username(), input);
+            return new RepositoryInfo(config.host(), config.username(), input);
         }
     }
 }

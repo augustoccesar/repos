@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+import se.augustocesar.repos.Config;
 import se.augustocesar.repos.RepositoryInfo;
 
 @Command(name = "expand", mixinStandardHelpOptions = true, description = """
@@ -29,11 +30,15 @@ public class Expand implements Callable<Integer> {
     @Parameters(index = "0", description = "repository name on one of the supported formats")
     String name;
 
+    private Config config;
+
+    public Expand(final Config config) {
+        this.config = config;
+    }
+
     @Override
     public Integer call() {
-        System.out.println("Expanding " + this.name);
-
-        System.out.println(RepositoryInfo.of(this.name));
+        System.out.println(RepositoryInfo.of(this.config, this.name));
 
         return 0;
     }
