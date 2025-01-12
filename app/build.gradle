@@ -24,6 +24,10 @@ application {
     mainClass = 'se.augustocesar.repos.Repos'
 }
 
+run{
+ standardInput = System.in
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
