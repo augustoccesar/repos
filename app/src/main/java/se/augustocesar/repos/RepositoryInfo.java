@@ -27,7 +27,11 @@ public record RepositoryInfo(String host, String username, String name) {
         }
     }
 
-    public String localPath() {
-        return Path.of(Constants.REPOS_DIR_PATH, this.host, this.username, this.name).toString();
+    public Path localPath() {
+        return Path.of(Constants.REPOS_DIR_PATH, this.host, this.username, this.name);
+    }
+
+    public String cloneUri() {
+        return "git@" + this.host + ":" + this.username + "/" + this.name;
     }
 }
