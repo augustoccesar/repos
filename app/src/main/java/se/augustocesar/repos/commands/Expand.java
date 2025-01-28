@@ -54,31 +54,34 @@ public class Expand implements Callable<Integer> {
         }
 
         if (this.clone) {
-            Git.clone(info.cloneUri(), info.localPath().toString());
-            System.out.println(info.localPath());
-            return 0;
-        }
+            System.out.println("Repository not found locally.");
+            System.out.println("Local path: " + info.localPath());
+            System.out.println("Git repo: " + info.cloneUri());
+            System.out.println("Do you want to clone it? (y, N)");
 
-        System.out.println("Repository not found locally.");
-        System.out.println("Looking at: " + info.localPath());
-        System.out.println("Remote repository: " + info.cloneUri());
-        System.out.println("Do you want to clone it? (y, N)");
+            try {
+                var reader = new BufferedReader(new InputStreamReader(System.in));
+                var response = reader.readLine();
 
-        try {
-            var reader = new BufferedReader(new InputStreamReader(System.in));
-            var response = reader.readLine();
+                if (response != null && response.toLowerCase().equals("y")) {
+                    if (Git.clone(info.cloneUri(), info.localPath().toString())) {
+                        System.out.println(info.localPath());
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    System.out.println("Aborted!");
+                    return 1;
+                }
 
-            if (response != null && response.toLowerCase().equals("y")) {
-                Git.clone(info.cloneUri(), info.localPath().toString());
-                System.out.println(info.localPath());
-            } else {
-                System.out.println("Exiting...");
+            } catch (IOException e) {
+                System.err.println("Failed to read input.");
+                return 1;
             }
-        } catch (IOException e) {
-            System.err.println("Failed to read input.");
+        } else {
+            System.out.println("Repo not found locally.");
             return 1;
         }
-
-        return 0;
     }
 }

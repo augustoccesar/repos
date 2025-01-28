@@ -32,6 +32,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+task install (dependsOn: nativeBuild, type: Copy) {
+    from "build/native/nativeCompile"
+    into "${System.env.HOME}/.repos/bin"
+    include "repos"
+}
+
 graalvmNative {
     binaries {
         main {
