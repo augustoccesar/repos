@@ -9,7 +9,7 @@ use std::process::exit;
 use clap::{command, Parser, Subcommand};
 
 use commands::{
-    CleanupCommandArgs, ConfigCommandArgs, ExpandCommandArgs, ListCommandArgs, NewCommandArgs, SetupCommandArgs, TrackCommandArgs
+    ConfigCommandArgs, ExpandCommandArgs, ListCommandArgs, NewCommandArgs, TrackCommandArgs,
 };
 use config::Config;
 use error::{Error, Result};
@@ -28,11 +28,7 @@ enum Command {
     #[command()]
     Expand(ExpandCommandArgs),
     #[command()]
-    Setup(SetupCommandArgs),
-    #[command()]
     Config(ConfigCommandArgs),
-    #[command()]
-    Cleanup(CleanupCommandArgs),
     #[command()]
     New(NewCommandArgs),
     #[command()]
@@ -47,9 +43,7 @@ fn main() -> Result<()> {
 
     let result = match cli.command {
         Command::Expand(args) => commands::expand(args, &config),
-        Command::Setup(args) => commands::setup(args),
         Command::Config(args) => commands::config(args, &mut config),
-        Command::Cleanup(args) => commands::cleanup(args),
         Command::New(args) => commands::new(args),
         Command::Track(args) => commands::track(args, &config),
         Command::List(args) => commands::list(&args, &config),
