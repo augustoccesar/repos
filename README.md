@@ -72,6 +72,29 @@ on the CLI (as of now).
 
 For better details on the avaialble config, check the [config handling file](src/config.rs).
 
+### Example workflows
+
+#### List with filter and cd by index
+
+```bash
+> repos list -f dns
+repos
+└ github.com
+  ├ lus
+  │ └ (53) libdns-rs
+  ├ libdns
+  │ ├ (55) cloudflare
+  │ └ (56) libdns
+  ├ caddy-dns
+  │ └ (61) cloudflare
+  └ hickory-dns
+    └ (68) hickory-dns
+
+> rcd @61
+> pwd
+/repos/github.com/caddy-dns/cloudflare
+```
+
 ### Install from source
 
 ```bash
