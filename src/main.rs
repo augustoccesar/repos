@@ -46,7 +46,7 @@ fn main() -> Result<()> {
         Command::Config(args) => commands::config(args, &mut config),
         Command::New(args) => commands::new(args),
         Command::Track(args) => commands::track(args, &config),
-        Command::List(args) => commands::list(&args, &config),
+        Command::List(args) => commands::list(&args, &mut config),
     };
 
     match result {

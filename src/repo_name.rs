@@ -125,6 +125,7 @@ mod tests {
             default_host: Some(String::from("github.com")),
             default_username: Some(String::from("username")),
             home_path: Some(String::from("/Users/username")),
+            last_list: None,
         };
         let clone_url = "git@github.com:rust-lang/rust.git";
 
@@ -142,6 +143,7 @@ mod tests {
             default_host: Some(String::from("github.com")),
             default_username: Some(String::from("username")),
             home_path: Some(String::from("/Users/username")),
+            last_list: None,
         };
 
         let result = RepoName::Full("github.com".into(), "rust-lang".into(), "rust".into())
@@ -158,6 +160,7 @@ mod tests {
             default_host: Some(String::from("github.com")),
             default_username: Some(String::from("username")),
             home_path: Some(String::from("/Users/username")),
+            last_list: None,
         };
 
         let result = RepoName::UserRepo("rust-lang".into(), "rust".into())
@@ -174,6 +177,7 @@ mod tests {
             default_host: Some(String::from("github.com")),
             default_username: Some(String::from("augustoccesar")),
             home_path: Some(String::from("/Users/username")),
+            last_list: None,
         };
 
         let result = RepoName::RepoOnly("repos".into())
@@ -199,6 +203,7 @@ mod tests {
             default_host: Some(String::from("github.com")),
             default_username: Some(String::from("username")),
             home_path: Some(String::from("/Users/username")),
+            last_list: None,
         };
 
         let result = RepoName::RepoOnly("r".into()).local_path(&config).unwrap();

@@ -21,6 +21,8 @@ pub struct ExpandCommandArgs {
     ///     2. Default to whoami::username()
     ///
     /// Supported formats:
+    ///   - @{index}
+    ///     - This will expand the repo with the {index} displayed on the last `repos list`
     ///   - git@{host}:{username}/{repo}.git
     ///   - {host}/{username}/{repo}
     ///   - {username}/{repo}
@@ -34,6 +36,19 @@ pub struct ExpandCommandArgs {
 }
 
 pub fn expand(args: ExpandCommandArgs, config: &Config) -> Result<()> {
+    if args.name.starts_with("@") {
+        return match &config.last_list {
+            Some(last_list) => {
+                let index = args.name[1..].parse::<usize>()?;
+                let path = last_list.get(&index).ok_or(Error::NotFound)?;
+
+                print!("{}", path);
+                Ok(())
+            }
+            None => Err(Error::NotFound),
+        }
+    }
+
     let repo_name = RepoName::try_from(&args.name)?;
 
     let path = repo_name.local_path(config)?;

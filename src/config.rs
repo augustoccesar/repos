@@ -25,6 +25,8 @@ pub struct Config {
     pub default_host: Option<String>,
     pub default_username: Option<String>,
     pub home_path: Option<String>,
+    // TODO(augustoccesar)[2025-03-04]: Maybe move this into a different file?
+    pub last_list: Option<HashMap<usize, String>>,
 }
 
 impl Config {

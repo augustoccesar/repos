@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 
 use crate::{
     config::{repos_folder_path, Config},
@@ -11,8 +11,15 @@ pub struct Args {
     filter: Option<String>,
 }
 
-pub fn list(args: &Args, config: &Config) -> Result<()> {
-    let mut root = Folder::root().visit(config);
+pub fn list(args: &Args, config: &mut Config) -> Result<()> {
+    let mut current_idx = 0usize;
+    let mut index_map: HashMap<usize, String> = HashMap::new();
+    let mut root = Folder::root().visit(config, &mut current_idx, &mut index_map);
+
+    config.last_list = Some(index_map);
+    if let Err(error) = config.save() {
+        println!("Failed to save the list indexes to config: {:?}", error);
+    }
 
     if args.filter.is_some() {
         root.apply_filter(args.filter.as_ref().unwrap());
@@ -41,6 +48,10 @@ fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
         }
     }
 
+    if let Some(index) = folder.index {
+        line.push_str(&format!("({}) ", index));
+    }
+
     line.push_str(&folder_name);
 
     if let (true, Some(alias)) = (folder.is_repo, &folder.alias) {
@@ -65,8 +76,10 @@ fn print_folder(folder: &Folder, prefix: &str, is_last: bool) {
     }
 }
 
+// TODO(augustoccesar)[2025-03-04]: Make this into an enum structure to avoid `is_folder`.
 #[derive(Debug, Default, Clone)]
 struct Folder {
+    index: Option<usize>,
     path: String,
     path_from_base: String,
     is_root: bool,
@@ -109,7 +122,7 @@ impl Folder {
         }
     }
 
-    fn visit(mut self, config: &Config) -> Self {
+    fn visit(mut self, config: &mut Config, index_tracking: &mut usize, index_map: &mut HashMap<usize, String>) -> Self {
         let paths = fs::read_dir(&self.path).unwrap();
         for item in paths.flatten() {
             if item.metadata().unwrap().is_dir() {
@@ -125,8 +138,14 @@ impl Folder {
                 let is_repo = item.path().join(".git").exists();
 
                 let mut folder = Folder::new(item.path(), is_repo, alias);
-                if !folder.is_repo {
-                    folder = folder.visit(config);
+                if folder.is_repo {
+                    folder.index = Some(*index_tracking);
+
+                    index_map.insert(*index_tracking, folder.path.clone());
+
+                    *index_tracking += 1;
+                } else {
+                    folder = folder.visit(config, index_tracking, index_map);
                 }
 
                 self.sub_folders.push(folder);
