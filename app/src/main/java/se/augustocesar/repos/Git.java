@@ -14,7 +14,7 @@ public class Git {
 
             return false;
         } catch (InterruptedException e) {
-            System.err.println("Interrupted clonning.");
+            System.err.println("Interrupted cloning.");
 
             return false;
         }
