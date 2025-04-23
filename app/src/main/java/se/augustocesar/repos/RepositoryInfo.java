@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public record RepositoryInfo(String host, String username, String name) {
 
-    static final Pattern FULL_GIT = Pattern.compile("^git@(.+):(.+)\\/(.+).git$");
+    static final Pattern FULL_GIT = Pattern.compile("^git@(.+):(.+)/(.+).git$");
 
     public static RepositoryInfo of(Config config, String input) {
         var fullGitMatcher = FULL_GIT.matcher(input);
