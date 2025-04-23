@@ -19,14 +19,14 @@ public record Config(
             var configFromFile = objectMapper.readValue(new File(Constants.CONFIG_FILE_PATH), Config.class);
 
             String host;
-            if (configFromFile.host == null || configFromFile.host == "") {
+            if (configFromFile.host == null || configFromFile.host.isBlank()) {
                 host = Defaults.host();
             } else {
                 host = configFromFile.host;
             }
 
             String username;
-            if (configFromFile.username == null || configFromFile.username == "") {
+            if (configFromFile.username == null || configFromFile.username.isBlank()) {
                 username = Defaults.username();
             } else {
                 username = configFromFile.username;
