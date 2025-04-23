@@ -32,7 +32,7 @@ import se.augustocesar.repos.RepositoryInfo;
                 - {username}/{repo}
                 - {repo}
         """)
-public class Expand implements Callable<Integer> {
+public class ExpandCommand implements Callable<Integer> {
     @Parameters(index = "0", description = "repository name on one of the supported formats")
     String name;
 
@@ -41,7 +41,7 @@ public class Expand implements Callable<Integer> {
 
     private Config config;
 
-    public Expand(final Config config) {
+    public ExpandCommand(final Config config) {
         this.config = config;
     }
 
@@ -63,7 +63,7 @@ public class Expand implements Callable<Integer> {
                 var reader = new BufferedReader(new InputStreamReader(System.in));
                 var response = reader.readLine();
 
-                if (response != null && response.toLowerCase().equals("y")) {
+                if (response != null && response.equalsIgnoreCase("y")) {
                     if (Git.clone(info.cloneUri(), info.localPath().toString())) {
                         System.out.println(info.localPath());
                         return 0;

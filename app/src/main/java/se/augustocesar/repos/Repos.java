@@ -9,19 +9,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import se.augustocesar.repos.commands.Expand;
+import se.augustocesar.repos.commands.ExpandCommand;
+import se.augustocesar.repos.commands.ListCommand;
 
 @Command(name = "repos", mixinStandardHelpOptions = true)
 public class Repos {
     static void setupSystem() throws IOException {
-        new File(Constants.REPOS_DIR_PATH).mkdirs();
+        var reposDir = new File(Constants.REPOS_DIR_PATH);
 
-        var configFile = new File(Constants.CONFIG_FILE_PATH);
-        if (!configFile.exists()) {
-            configFile.createNewFile();
+        if (reposDir.exists() || reposDir.mkdirs()) {
+            var configFile = new File(Constants.CONFIG_FILE_PATH);
 
-            try (var writer = new BufferedWriter(new FileWriter(configFile))) {
-                writer.write("{\n}");
+            if (configFile.exists() || configFile.createNewFile()) {
+                try (var writer = new BufferedWriter(new FileWriter(configFile))) {
+                    writer.write("{\n}");
+                }
             }
         }
     }
@@ -38,7 +40,8 @@ public class Repos {
         var config = Config.load(mapper);
 
         var commandLine = new CommandLine(new Repos());
-        commandLine.addSubcommand("expand", new Expand(config));
+        commandLine.addSubcommand("expand", new ExpandCommand(config));
+        commandLine.addSubcommand("list", new ListCommand());
 
         var exitCode = commandLine.execute(args);
         System.exit(exitCode);
