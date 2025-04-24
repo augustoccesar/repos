@@ -24,8 +24,9 @@ application {
     mainClass = 'se.augustocesar.repos.Repos'
 }
 
-run{
- standardInput = System.in
+run {
+    standardInput = System.in
+    outputs.upToDateWhen { false }
 }
 
 tasks.named('test') {
