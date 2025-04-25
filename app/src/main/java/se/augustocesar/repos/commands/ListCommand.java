@@ -1,20 +1,19 @@
 package se.augustocesar.repos.commands;
 
-import java.util.ArrayDeque;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import se.augustocesar.repos.ReposDir;
+
+import java.util.*;
 
 public class ListCommand implements Command {
-    public record Args(Optional<String> filter) {
+    public record Args(String filter) {
         public static Args parse(ArrayDeque<String> rawArgs) throws InvalidCommandArg {
-            Optional<String> filter = Optional.empty();
+            String filter = null;
             if (!rawArgs.isEmpty()) {
                 var arg = rawArgs.pop();
                 switch (arg) {
                     case "-f", "--filter":
                         try {
-                            var filterValue = rawArgs.pop();
-                            filter = Optional.of(filterValue);
+                            filter = rawArgs.pop();
 
                             break;
                         } catch (NoSuchElementException e) {
@@ -37,8 +36,9 @@ public class ListCommand implements Command {
 
     @Override
     public Integer call() {
-        System.out.println("List command");
-        System.out.println(this.args.filter);
+        String output = ReposDir.load().displayTree(this.args.filter);
+
+        System.out.println(output);
 
         return 0;
     }
