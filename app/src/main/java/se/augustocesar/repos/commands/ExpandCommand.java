@@ -4,56 +4,57 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.util.concurrent.Callable;
+import java.util.ArrayDeque;
+import java.util.Optional;
 
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 import se.augustocesar.repos.Config;
 import se.augustocesar.repos.Git;
 import se.augustocesar.repos.RepositoryInfo;
 
-@Command(name = "expand", mixinStandardHelpOptions = true, description = """
-        This command expands the passed on repository name to the full path.
+public class ExpandCommand implements Command {
+    public record Args(String name, boolean shouldClone) {
+        public static Args parse(ArrayDeque<String> rawArgs) throws InvalidCommandArg {
+            if (rawArgs.isEmpty()) {
+                throw new InvalidCommandArg("Missing repository name.");
+            }
 
-        For cases where the fields are not all present on the name, they will be resolved by:
+            var name = rawArgs.pop();
+            var clone = false;
 
-            host:
-                1. What is on the `default_host` of the config.
-                2. Default to "github.com".
+            if (!rawArgs.isEmpty()) {
+                var arg = rawArgs.pop();
 
-            username:
-                1. What is on the `default_username` of the config.
-                2. Default to whoami::username()
+                switch (arg) {
+                    case "-c", "--clone":
+                        clone = true;
 
-            Supported formats:
-                - git@{host}:{username}/{repo}.git
-                - {host}/{username}/{repo}
-                - {username}/{repo}
-                - {repo}
-        """)
-public class ExpandCommand implements Callable<Integer> {
-    @Parameters(index = "0", description = "repository name on one of the supported formats")
-    String name;
+                        break;
+                    default:
+                        throw new InvalidCommandArg("Invalid arg: " + arg);
+                }
+            }
 
-    @Option(names = { "-c", "--clone" }, description = "clone the repository if not exists locally")
-    boolean clone;
+            return new Args(name, clone);
+        }
+    }
 
+    private Args args;
     private Config config;
 
-    public ExpandCommand(final Config config) {
+    public ExpandCommand(Args args, final Config config) {
+        this.args = args;
         this.config = config;
     }
 
     @Override
     public Integer call() {
-        var info = RepositoryInfo.of(this.config, this.name);
+        var info = RepositoryInfo.of(this.config, this.args.name);
         if (Files.exists(info.localPath())) {
             System.out.println(info.localPath());
             return 0;
         }
 
-        if (this.clone) {
+        if (this.args.shouldClone) {
             System.out.println("Repository not found locally.");
             System.out.println("Local path: " + info.localPath());
             System.out.println("Git repo: " + info.cloneUri());
@@ -83,5 +84,30 @@ public class ExpandCommand implements Callable<Integer> {
             System.out.println("Repo not found locally.");
             return 1;
         }
+    }
+
+    @Override
+    public Optional<String> help() {
+        var text = """
+                This command expands the passed on repository name to the full path.
+                
+                For cases where the fields are not all present on the name, they will be resolved by:
+                
+                    host:
+                        1. What is on the `default_host` of the config.
+                        2. Default to "github.com".
+                
+                    username:
+                        1. What is on the `default_username` of the config.
+                        2. Default to whoami::username()
+                
+                    Supported formats:
+                        - git@{host}:{username}/{repo}.git
+                        - {host}/{username}/{repo}
+                        - {username}/{repo}
+                        - {repo}
+                """;
+
+        return Optional.of(text);
     }
 }
