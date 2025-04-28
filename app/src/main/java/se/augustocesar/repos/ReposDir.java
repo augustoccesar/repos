@@ -100,20 +100,26 @@ public class ReposDir {
         }
 
         public void add(String repoPath) {
-            ArrayDeque<String> pathParts = new ArrayDeque<>(Arrays.asList(repoPath.split("/")));
+            String[] pathParts = repoPath.split("/");
+            add(pathParts, 0);
+        }
 
-            var part = pathParts.pop();
+        private void add(String[] repoPathParts, int index) {
+            if (index >= repoPathParts.length) {
+                return;
+            }
 
-            var node = this.leaves.stream().filter(leave -> leave.name.equals(part)).findFirst();
+            String part = repoPathParts[index];
+            var node = this.leaves.stream().filter(leaf -> leaf.name.equals(part)).findFirst();
+
             if (node.isPresent()) {
-                node.get().add(String.join("/", pathParts));
+                node.get().add(repoPathParts, index + 1);
             } else {
                 var newNode = new Node(this.depth + 1, part);
-                if (!pathParts.isEmpty()) {
-                    newNode.add(String.join("/", pathParts));
-                }
 
                 this.leaves.add(newNode);
+
+                newNode.add(repoPathParts, index + 1);
             }
         }
 
