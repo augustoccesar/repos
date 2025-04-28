@@ -1,34 +1,43 @@
 package se.augustocesar.repos;
 
-import org.tomlj.Toml;
-import org.tomlj.TomlParseResult;
+import com.moandjiezana.toml.Toml;
 
-import java.io.IOException;
-import java.nio.file.Path;
+import java.io.File;
+import java.util.HashMap;
 
-public record Config(String host, String username) {
+public class Config {
+    private final String host;
+    private final String username;
+    private final HashMap<String, Object> index;
+
+    public Config(String host, String username, HashMap<String, Object> index) {
+        this.host = host;
+        this.username = username;
+        this.index = index;
+    }
+
     public static Config buildDefault() {
-        return new Config(Defaults.host(), Defaults.username());
+        return new Config(Defaults.host(), Defaults.username(), new HashMap<>());
     }
 
     static Config load() {
-        try {
-            TomlParseResult result = Toml.parse(Path.of(Constants.CONFIG_FILE_PATH));
-            if (result.hasErrors()) {
-                // TODO: Logging
-                return buildDefault();
-            }
-
-            String configHost = result.getString("host");
-            String configUsername = result.getString("username");
-
-            return new Config(
-                    configHost == null ? Defaults.host() : configHost,
-                    configUsername == null ? Defaults.username() : configUsername
-            );
-        } catch (IOException e) {
-            // TODO: Logging
+        File configFile = new File(Constants.CONFIG_FILE_PATH);
+        if (!configFile.exists()) {
             return buildDefault();
         }
+
+        return new Toml().read(configFile).to(Config.class);
+    }
+
+    public String getHost() {
+        return this.host != null ? this.host : Defaults.host();
+    }
+
+    public String getUsername() {
+        return this.username != null ? this.username : Defaults.username();
+    }
+
+    public HashMap<String, Object> getIndex() {
+        return index;
     }
 }
