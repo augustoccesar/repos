@@ -25,8 +25,7 @@ public class ReposDir {
         }
 
         return repos.stream().filter(
-                repo -> repo
-                        .replace(Constants.REPOS_DIR_PATH, "")
+                repo -> pathFromBase(repo)
                         .toLowerCase()
                         .contains(filter.toLowerCase())
         ).collect(Collectors.toList());
@@ -34,7 +33,7 @@ public class ReposDir {
 
     public String displayTree(String filter) {
         var filteredRepos = this.list(filter).stream()
-                .map(repo -> repo.replace(Constants.REPOS_DIR_PATH, "").substring(1))
+                .map(repo -> pathFromBase(repo).substring(1))
                 .sorted()
                 .toList();
 
@@ -47,6 +46,12 @@ public class ReposDir {
         node.asTree(tree, false, true);
 
         return tree.toString();
+    }
+
+    private String pathFromBase(String repoFullPath) {
+        return repoFullPath.startsWith(Constants.REPOS_DIR_PATH)
+                ? repoFullPath.substring(Constants.REPOS_DIR_PATH.length())
+                : repoFullPath;
     }
 
     private void scanDir(String dirPath) {
