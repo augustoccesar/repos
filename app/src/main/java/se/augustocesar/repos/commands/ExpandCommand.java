@@ -4,58 +4,60 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.util.ArrayDeque;
-import java.util.Optional;
+import java.util.concurrent.Callable;
 
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Option;
 import se.augustocesar.repos.Config;
 import se.augustocesar.repos.Git;
 import se.augustocesar.repos.RepositoryInfo;
 
-public class ExpandCommand implements Command {
-    public record Args(String name, boolean shouldClone) {
-        public static Args parse(ArrayDeque<String> rawArgs) throws InvalidCommandArg {
-            if (rawArgs.isEmpty()) {
-                throw new InvalidCommandArg("Missing repository name.");
-            }
+@Command(name = "expand", mixinStandardHelpOptions = true, description = "Expands the passed on repository name to the full path.")
+public class ExpandCommand implements Callable<Integer> {
+    //    @Parameters(index = "0", description = "repository name on one of the supported formats")
+    @Parameters(index = "0", description = """
+            Name of the repo to expand.
 
-            var name = rawArgs.pop();
-            var clone = false;
+            For cases where the fields are not all present on the name, they will be resolved by:
+            
+            host:
+                1. What is on the `default_host` of the config.
+                2. Default to "github.com".
+            
+            username:
+                1. What is on the `default_username` of the config.
+                2. Default to whoami::username()
+            
+            Supported formats:
+                - git@{host}:{username}/{repo}.git
+                - {host}/{username}/{repo}
+                - {username}/{repo}
+                - {repo}
+            """)
+    String name;
 
-            if (!rawArgs.isEmpty()) {
-                var arg = rawArgs.pop();
+    @Option(names = {"-c", "--clone"}, description = "Clone the repository if not exists locally.")
+    boolean shouldClone;
 
-                switch (arg) {
-                    case "-c", "--clone":
-                        clone = true;
-
-                        break;
-                    default:
-                        throw new InvalidCommandArg("Invalid arg: " + arg);
-                }
-            }
-
-            return new Args(name, clone);
-        }
-    }
-
-    private final Args args;
+    private final Appendable output;
     private final Config config;
 
-    public ExpandCommand(Args args, final Config config) {
-        this.args = args;
+    public ExpandCommand(final Appendable output, final Config config) {
+        this.output = output;
         this.config = config;
     }
 
     @Override
-    public Integer run(Appendable output) throws IOException {
-        var info = RepositoryInfo.of(this.config, this.args.name);
+    public Integer call() throws IOException {
+        var info = RepositoryInfo.of(this.config, this.name);
         if (Files.exists(info.localPath())) {
             output.append(info.localPath().toString()).append('\n');
 
             return 0;
         }
 
-        if (this.args.shouldClone) {
+        if (this.shouldClone) {
             output.append("Repository not found locally.").append('\n');
             output.append("Local path: ").append(info.localPath().toString()).append('\n');
             output.append("Git repo: ").append(info.cloneUri()).append('\n');
@@ -89,30 +91,5 @@ public class ExpandCommand implements Command {
 
             return 1;
         }
-    }
-
-    @Override
-    public Optional<String> help() {
-        var text = """
-                This command expands the passed on repository name to the full path.
-                
-                For cases where the fields are not all present on the name, they will be resolved by:
-                
-                    host:
-                        1. What is on the `default_host` of the config.
-                        2. Default to "github.com".
-                
-                    username:
-                        1. What is on the `default_username` of the config.
-                        2. Default to whoami::username()
-                
-                    Supported formats:
-                        - git@{host}:{username}/{repo}.git
-                        - {host}/{username}/{repo}
-                        - {username}/{repo}
-                        - {repo}
-                """;
-
-        return Optional.of(text);
     }
 }

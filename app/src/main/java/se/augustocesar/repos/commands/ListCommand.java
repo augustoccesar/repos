@@ -1,57 +1,29 @@
 package se.augustocesar.repos.commands;
 
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import se.augustocesar.repos.ReposDir;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 
-public class ListCommand implements Command {
-    public record Args(String filter) {
-        public static Args parse(ArrayDeque<String> rawArgs) throws InvalidCommandArg {
-            String filter = null;
-            if (!rawArgs.isEmpty()) {
-                var arg = rawArgs.pop();
-                switch (arg) {
-                    case "-f", "--filter":
-                        try {
-                            filter = rawArgs.pop();
+@Command(name = "list", mixinStandardHelpOptions = true, description = "List all the available repositories.")
+public class ListCommand implements Callable<Integer> {
+    @Option(names = {"-f", "--filter"}, description = "Text to look for on repositories path.")
+    String filter;
 
-                            break;
-                        } catch (NoSuchElementException e) {
-                            throw new InvalidCommandArg("Missing value for filter");
-                        }
-                    default:
-                        throw new InvalidCommandArg("Invalid arg: " + arg);
-                }
-            }
+    private final Appendable output;
 
-            return new Args(filter);
-        }
-    }
-
-    private final Args args;
-
-    public ListCommand(Args args) {
-        this.args = args;
+    public ListCommand(final Appendable output) {
+        this.output = output;
     }
 
     @Override
-    public Integer run(Appendable output) throws IOException {
-        output.append(this.displayTree(this.args.filter));
+    public Integer call() throws IOException {
+        output.append(this.displayTree(this.filter));
 
         return 0;
-    }
-
-    @Override
-    public Optional<String> help() {
-        var help = """
-                List all the available repositories.
-                
-                Args:
-                  - filter: Text to look for on repositories path.
-                """;
-
-        return Optional.of(help);
     }
 
     public String displayTree(String filter) {
