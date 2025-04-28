@@ -1,14 +1,21 @@
 package se.augustocesar.repos.commands;
 
+import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import se.augustocesar.repos.ReposDir;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+import static se.augustocesar.repos.ReposDir.pathFromBase;
+
 @Command(name = "list", mixinStandardHelpOptions = true, description = "List all the available repositories.")
 public class ListCommand implements Callable<Integer> {
+    @ParentCommand
+    private Repos reposCommand;
+
     @Option(names = {"-f", "--filter"}, description = "Text to look for on repositories path.")
     String filter;
 
@@ -21,19 +28,23 @@ public class ListCommand implements Callable<Integer> {
 
     public String displayTree(String filter) {
         ReposDir reposDir = ReposDir.load();
+        List<String> repoPaths = reposDir.getRepos();
 
-        var filteredRepos = reposDir.list(filter).stream()
-                .map(repo -> {
-                    String path = ReposDir.pathFromBase(repo);
+        try {
+            this.reposCommand.config().updateIndex(repoPaths);
+        } catch (IOException e) {
+            // TODO: Log
+        }
 
-                    return path.startsWith("/") ? path.substring(1) : path;
-                })
-                .sorted()
-                .toList();
-
-        Node root = new Node(-1, "root");
-        for (String repoPath : filteredRepos) {
-            root.add(repoPath);
+        Node root = Node.root();
+        for (int i = 0; i < repoPaths.size(); i++) {
+            String pathFromBase = pathFromBase(repoPaths.get(i));
+            if (filter == null || pathFromBase.toLowerCase().contains(filter.toLowerCase())) {
+                root.add(
+                        String.valueOf(i),
+                        pathFromBase.startsWith("/") ? pathFromBase.substring(1) : pathFromBase
+                );
+            }
         }
 
         StringBuilder tree = new StringBuilder();
@@ -47,44 +58,57 @@ public class ListCommand implements Callable<Integer> {
 
     private static class Node {
         private final int depth;
+        private final String index;
         private final String name;
+        private final boolean showIndex;
         private final List<Node> leaves;
 
-        private Node(int depth, String name) {
+        private Node(int depth, String index, String name, boolean showIndex) {
             this.depth = depth;
+            this.index = index;
             this.name = name;
+            this.showIndex = showIndex;
             this.leaves = new ArrayList<>();
         }
 
-        public void add(String repoPath) {
-            String[] pathParts = repoPath.split("/");
-            add(pathParts, 0);
+        public static Node root() {
+            return new Node(-1, "-", "root", false);
         }
 
-        private void add(String[] repoPathParts, int index) {
-            if (index >= repoPathParts.length) {
+        public void add(String index, String repoPath) {
+            String[] pathParts = repoPath.split("/");
+            add(index, pathParts, 0);
+        }
+
+        private void add(String index, String[] repoPathParts, int pathPartIndex) {
+            if (pathPartIndex >= repoPathParts.length) {
                 return;
             }
 
-            String part = repoPathParts[index];
+            String part = repoPathParts[pathPartIndex];
             var node = this.leaves.stream().filter(leaf -> leaf.name.equals(part)).findFirst();
 
             if (node.isPresent()) {
-                node.get().add(repoPathParts, index + 1);
+                node.get().add(index, repoPathParts, pathPartIndex + 1);
             } else {
-                var newNode = new Node(this.depth + 1, part);
+                var newNode = new Node(this.depth + 1, index, part, pathPartIndex == repoPathParts.length - 1);
 
                 this.leaves.add(newNode);
 
-                newNode.add(repoPathParts, index + 1);
+                newNode.add(index, repoPathParts, pathPartIndex + 1);
             }
         }
 
         public void asTree(StringBuilder builder, String prefix, boolean isLast) {
             if (depth >= 0) {
                 builder.append(prefix)
-                        .append(isLast ? "└─ " : "├─ ")
-                        .append(name)
+                        .append(isLast ? "└─ " : "├─ ");
+
+                if (this.showIndex) {
+                    builder.append("(").append(this.index).append(") ");
+                }
+
+                builder.append(name)
                         .append("\n");
             }
 

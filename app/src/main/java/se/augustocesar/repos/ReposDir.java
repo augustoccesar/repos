@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ReposDir {
     private final List<String> repos;
@@ -20,22 +19,14 @@ public class ReposDir {
         return reposDir;
     }
 
-    public List<String> list(String filter) {
-        if (filter == null || filter.isBlank()) {
-            return repos;
-        }
-
-        return repos.stream().filter(
-                repo -> pathFromBase(repo)
-                        .toLowerCase()
-                        .contains(filter.toLowerCase())
-        ).collect(Collectors.toList());
-    }
-
     public static String pathFromBase(String repoFullPath) {
         return repoFullPath.startsWith(Constants.REPOS_DIR_PATH)
                 ? repoFullPath.substring(Constants.REPOS_DIR_PATH.length())
                 : repoFullPath;
+    }
+
+    public List<String> getRepos() {
+        return repos;
     }
 
     private void scanDir(String dirPath) {

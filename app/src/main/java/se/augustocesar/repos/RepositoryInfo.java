@@ -6,8 +6,21 @@ import java.util.regex.Pattern;
 public record RepositoryInfo(String host, String username, String name) {
 
     static final Pattern FULL_GIT = Pattern.compile("^git@(.+):(.+)/(.+).git$");
+    static final Pattern INDEX = Pattern.compile("^@(\\d+)$");
 
     public static RepositoryInfo of(Config config, String input) {
+        var indexMatcher = INDEX.matcher(input);
+        if (indexMatcher.matches()) {
+            var indexInput = indexMatcher.group(1);
+            var index = config.getIndex();
+            if (index != null) {
+                String path = (String) index.get(indexInput);
+                if (path != null) {
+                    input = path;
+                }
+            }
+        }
+
         var fullGitMatcher = FULL_GIT.matcher(input);
         if (fullGitMatcher.matches()) {
             var host = fullGitMatcher.group(1);
