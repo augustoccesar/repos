@@ -133,7 +133,7 @@ public class ReposDir {
         public void asTree(StringBuilder builder, String prefix, boolean isLast) {
             if (depth >= 0) {
                 builder.append(prefix)
-                        .append(isLast ? "└── " : "├── ")
+                        .append(isLast ? "└─ " : "├─ ")
                         .append(name)
                         .append("\n");
             }
@@ -142,7 +142,7 @@ public class ReposDir {
                 boolean lastChild = i == leaves.size() - 1;
                 leaves.get(i).asTree(
                         builder,
-                        prefix + (isLast ? "    " : "│   "),
+                        prefix + (isLast ? "   " : "│  "),
                         lastChild
                 );
             }
