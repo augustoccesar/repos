@@ -21,7 +21,7 @@ java {
 }
 
 application {
-    mainClass = 'se.augustocesar.repos.Repos'
+    mainClass = 'se.augustocesar.repos.CliEntrypoint'
 }
 
 run {
@@ -44,7 +44,7 @@ graalvmNative {
     binaries {
         main {
             imageName = "repos"
-            mainClass = "se.augustocesar.repos.Repos"
+            mainClass = "se.augustocesar.repos.CliEntrypoint"
             buildArgs.add("-Os")
         }
     }

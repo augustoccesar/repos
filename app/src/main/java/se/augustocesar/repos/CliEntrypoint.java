@@ -1,15 +1,13 @@
 package se.augustocesar.repos;
 
+import picocli.CommandLine;
+import se.augustocesar.repos.commands.Repos;
+
 import java.io.File;
 import java.io.IOException;
 
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import se.augustocesar.repos.commands.ExpandCommand;
-import se.augustocesar.repos.commands.ListCommand;
 
-@Command(name = "repos", mixinStandardHelpOptions = true)
-public class Repos {
+public class CliEntrypoint {
     static void setupSystem() throws IOException {
         var reposDir = new File(Constants.REPOS_DIR_PATH);
 
@@ -30,11 +28,7 @@ public class Repos {
 
         var config = Config.load();
 
-        var commandLine = new CommandLine(new Repos());
-        commandLine.addSubcommand("expand", new ExpandCommand(System.out, config));
-        commandLine.addSubcommand("list", new ListCommand(System.out));
-
-        var exitCode = commandLine.execute(args);
-        System.exit(exitCode);
+        var repos = new Repos(config);
+        new CommandLine(repos).execute(args);
     }
 }

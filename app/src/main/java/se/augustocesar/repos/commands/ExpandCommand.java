@@ -6,28 +6,30 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
+import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Option;
-import se.augustocesar.repos.Config;
 import se.augustocesar.repos.Git;
 import se.augustocesar.repos.RepositoryInfo;
 
 @Command(name = "expand", mixinStandardHelpOptions = true, description = "Expands the passed on repository name to the full path.")
 public class ExpandCommand implements Callable<Integer> {
-    //    @Parameters(index = "0", description = "repository name on one of the supported formats")
+    @ParentCommand
+    private Repos reposCommand;
+
     @Parameters(index = "0", description = """
             Name of the repo to expand.
-
+            
             For cases where the fields are not all present on the name, they will be resolved by:
             
             host:
-                1. What is on the `default_host` of the config.
+                1. What is on the `host` of the config.
                 2. Default to "github.com".
             
             username:
-                1. What is on the `default_username` of the config.
-                2. Default to whoami::username()
+                1. What is on the `username` of the config.
+                2. Default to 'user.name' system property.
             
             Supported formats:
                 - git@{host}:{username}/{repo}.git
@@ -40,28 +42,20 @@ public class ExpandCommand implements Callable<Integer> {
     @Option(names = {"-c", "--clone"}, description = "Clone the repository if not exists locally.")
     boolean shouldClone;
 
-    private final Appendable output;
-    private final Config config;
-
-    public ExpandCommand(final Appendable output, final Config config) {
-        this.output = output;
-        this.config = config;
-    }
-
     @Override
-    public Integer call() throws IOException {
-        var info = RepositoryInfo.of(this.config, this.name);
+    public Integer call() {
+        var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
         if (Files.exists(info.localPath())) {
-            output.append(info.localPath().toString()).append('\n');
+            System.out.println(info.localPath());
 
             return 0;
         }
 
         if (this.shouldClone) {
-            output.append("Repository not found locally.").append('\n');
-            output.append("Local path: ").append(info.localPath().toString()).append('\n');
-            output.append("Git repo: ").append(info.cloneUri()).append('\n');
-            output.append("Do you want to clone it? (y, N)").append('\n');
+            System.out.println("Repository not found locally.");
+            System.out.println("Local path: " + info.localPath());
+            System.out.println("Git repo: " + info.cloneUri());
+            System.out.println("Do you want to clone it? (y, N)");
 
             try {
                 var reader = new BufferedReader(new InputStreamReader(System.in));
@@ -69,25 +63,25 @@ public class ExpandCommand implements Callable<Integer> {
 
                 if (response != null && response.equalsIgnoreCase("y")) {
                     if (Git.clone(info.cloneUri(), info.localPath().toString())) {
-                        output.append(info.localPath().toString()).append('\n');
+                        System.out.println(info.localPath());
 
                         return 0;
                     } else {
                         return 1;
                     }
                 } else {
-                    output.append("Aborted!").append('\n');
+                    System.out.println("Aborted!");
 
                     return 1;
                 }
 
             } catch (IOException e) {
-                output.append("Failed to read input.").append('\n');
+                System.out.println("Failed to read input.");
 
                 return 1;
             }
         } else {
-            output.append("Repo not found locally.").append('\n');
+            System.out.println("Repo not found locally.");
 
             return 1;
         }

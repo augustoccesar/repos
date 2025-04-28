@@ -4,7 +4,6 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import se.augustocesar.repos.ReposDir;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -13,15 +12,9 @@ public class ListCommand implements Callable<Integer> {
     @Option(names = {"-f", "--filter"}, description = "Text to look for on repositories path.")
     String filter;
 
-    private final Appendable output;
-
-    public ListCommand(final Appendable output) {
-        this.output = output;
-    }
-
     @Override
-    public Integer call() throws IOException {
-        output.append(this.displayTree(this.filter));
+    public Integer call() {
+        System.out.println(this.displayTree(this.filter));
 
         return 0;
     }
