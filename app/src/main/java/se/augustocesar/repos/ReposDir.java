@@ -37,7 +37,7 @@ public class ReposDir {
                 .sorted()
                 .toList();
 
-        Node node = Node.init(-1, "root");
+        Node node = new Node(-1, "root");
         for (String repoPath : filteredRepos) {
             node.add(repoPath);
         }
@@ -78,9 +78,15 @@ public class ReposDir {
         }
     }
 
-    private record Node(int depth, String name, ArrayList<Node> leaves) {
-        public static Node init(int depth, String name) {
-            return new Node(depth, name, new ArrayList<>());
+    private static class Node {
+        private final int depth;
+        private final String name;
+        private final List<Node> leaves;
+
+        private Node(int depth, String name) {
+            this.depth = depth;
+            this.name = name;
+            this.leaves = new ArrayList<>();
         }
 
         public void add(String repoPath) {
@@ -92,7 +98,7 @@ public class ReposDir {
             if (node.isPresent()) {
                 node.get().add(String.join("/", pathParts));
             } else {
-                var newNode = Node.init(this.depth + 1, part);
+                var newNode = new Node(this.depth + 1, part);
                 if (!pathParts.isEmpty()) {
                     newNode.add(String.join("/", pathParts));
                 }
