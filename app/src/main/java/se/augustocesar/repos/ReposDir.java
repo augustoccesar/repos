@@ -2,6 +2,7 @@ package se.augustocesar.repos;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,26 +57,35 @@ public class ReposDir {
 
     private void scanDir(String dirPath) {
         var dir = new File(dirPath);
-        File[] items = dir.listFiles();
 
+        if (hasGitFolder(dir)) {
+            try {
+                repos.add(dir.getCanonicalPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return;
+        }
+
+        File[] items = dir.listFiles();
         if (items == null) {
             return;
         }
 
-        var itemsList = Arrays.asList(items);
-        if (itemsList.stream().anyMatch(file -> file.getName().equals(".git"))) {
-            try {
-                repos.add(dir.getCanonicalPath());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            for (File item : itemsList) {
-                if (item.isDirectory()) {
-                    scanDir(item.getPath());
-                }
+        for (File item : items) {
+            if (item.isDirectory()) {
+                scanDir(item.getPath());
             }
         }
+    }
+
+    private boolean hasGitFolder(File dir) {
+        File[] items = dir.listFiles();
+        if (items == null) {
+            return false;
+        }
+
+        return Arrays.stream(items).anyMatch(file -> file.getName().equals(".git"));
     }
 
     private static class Node {
