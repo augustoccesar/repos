@@ -1,41 +1,34 @@
 package se.augustocesar.repos;
 
-import java.io.File;
+import org.tomlj.Toml;
+import org.tomlj.TomlParseResult;
+
 import java.io.IOException;
+import java.nio.file.Path;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public record Config(
-        @JsonProperty("host") String host,
-        @JsonProperty("username") String username) {
-
+public record Config(String host, String username) {
     public static Config buildDefault() {
         return new Config(Defaults.host(), Defaults.username());
     }
 
-    static Config load(final ObjectMapper objectMapper) {
+    static Config load() {
         try {
-            var configFromFile = objectMapper.readValue(new File(Constants.CONFIG_FILE_PATH), Config.class);
-
-            String host;
-            if (configFromFile.host == null || configFromFile.host.isBlank()) {
-                host = Defaults.host();
-            } else {
-                host = configFromFile.host;
+            TomlParseResult result = Toml.parse(Path.of(Constants.CONFIG_FILE_PATH));
+            if (result.hasErrors()) {
+                // TODO: Logging
+                return buildDefault();
             }
 
-            String username;
-            if (configFromFile.username == null || configFromFile.username.isBlank()) {
-                username = Defaults.username();
-            } else {
-                username = configFromFile.username;
-            }
+            String configHost = result.getString("host");
+            String configUsername = result.getString("username");
 
-            return new Config(host, username);
+            return new Config(
+                    configHost == null ? Defaults.host() : configHost,
+                    configUsername == null ? Defaults.username() : configUsername
+            );
         } catch (IOException e) {
-            // TODO: Log this error
-            return Config.buildDefault();
+            // TODO: Logging
+            return buildDefault();
         }
     }
 }

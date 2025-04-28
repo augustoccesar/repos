@@ -1,11 +1,7 @@
 package se.augustocesar.repos;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -20,11 +16,7 @@ public class Repos {
         if (reposDir.exists() || reposDir.mkdirs()) {
             var configFile = new File(Constants.CONFIG_FILE_PATH);
 
-            if (configFile.exists() || configFile.createNewFile()) {
-                try (var writer = new BufferedWriter(new FileWriter(configFile))) {
-                    writer.write("{\n}");
-                }
-            }
+            boolean _created = configFile.createNewFile();
         }
     }
 
@@ -36,9 +28,7 @@ public class Repos {
             System.exit(1);
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        var config = Config.load(mapper);
-
+        var config = Config.load();
 
         var commandLine = new CommandLine(new Repos());
         commandLine.addSubcommand("expand", new ExpandCommand(System.out, config));
