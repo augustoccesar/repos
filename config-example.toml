@@ -1,0 +1,13 @@
+host = "github.com" # By default, will be `github.com`.
+username = "augustoccesar" # By default, it will be the username on the system.
+
+# Aliases values can be in any format supported by `expand` command.
+[aliases]
+repos = "@0"
+aoc = "augustoccesar/adventofcode"
+
+# Indexes values can be in any format supported by `expand` command, except the index access (@<int>).
+# These are generated automatically any time `list` command is called.
+[index]
+0 = "github.com/augustoccesar/repos"
+1 = "augustoccesar/adventofcode"
