@@ -34,17 +34,24 @@ public class ReposDir {
 
     public String displayTree(String filter) {
         var filteredRepos = this.list(filter).stream()
-                .map(repo -> pathFromBase(repo).substring(1))
+                .map(repo -> {
+                    String path = pathFromBase(repo);
+
+                    return path.startsWith("/") ? path.substring(1) : path;
+                })
                 .sorted()
                 .toList();
 
-        Node node = new Node(-1, "root");
+        Node root = new Node(-1, "root");
         for (String repoPath : filteredRepos) {
-            node.add(repoPath);
+            root.add(repoPath);
         }
 
         StringBuilder tree = new StringBuilder();
-        node.asTree(tree, false, true);
+        for (int i = 0; i < root.leaves.size(); i++) {
+            boolean isLast = i == root.leaves.size() - 1;
+            root.leaves.get(i).asTree(tree, "", isLast);
+        }
 
         return tree.toString();
     }
@@ -123,23 +130,21 @@ public class ReposDir {
             }
         }
 
-        public void asTree(StringBuilder current, boolean isLast, boolean isParentLast) {
-            char linePrefix = isLast ? '└' : '├';
-            String parentPrefix = isParentLast ? "  " : "│ ";
-
-            if (this.depth >= 0) {
-                if (this.depth > 0) {
-                    current.append(" ");
-                    current.append(parentPrefix.repeat(this.depth - 1));
-                    current.append(linePrefix).append(" ");
-                }
-
-                current.append(this.name).append("\n");
+        public void asTree(StringBuilder builder, String prefix, boolean isLast) {
+            if (depth >= 0) {
+                builder.append(prefix)
+                        .append(isLast ? "└── " : "├── ")
+                        .append(name)
+                        .append("\n");
             }
 
-            for (int i = 0; i < this.leaves.size(); i++) {
-                boolean isLastLeaf = i == this.leaves.size() - 1;
-                this.leaves.get(i).asTree(current, isLastLeaf, isLast);
+            for (int i = 0; i < leaves.size(); i++) {
+                boolean lastChild = i == leaves.size() - 1;
+                leaves.get(i).asTree(
+                        builder,
+                        prefix + (isLast ? "    " : "│   "),
+                        lastChild
+                );
             }
         }
     }
