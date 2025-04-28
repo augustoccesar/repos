@@ -53,7 +53,7 @@ public class Repos {
                             System.out.println(expandCommand.help());
                             System.exit(0);
                         } else {
-                            expandCommand.call();
+                            expandCommand.run(System.out);
                         }
 
                         break;
@@ -65,7 +65,8 @@ public class Repos {
                             System.out.println(listCommand.help());
                             System.exit(0);
                         } else {
-                            listCommand.call();
+                            int status = listCommand.run(System.out);
+                            System.exit(status);
                         }
 
                         break;
@@ -77,16 +78,18 @@ public class Repos {
                                 """;
 
                         System.out.println(text);
+
                         break;
                     default:
                         System.err.println("Invalid arg: " + arg);
+
                         System.exit(1);
                 }
-            } catch (InvalidCommandArg e) {
+            } catch (InvalidCommandArg | IOException e) {
                 System.err.println(e.getMessage());
+
                 System.exit(1);
             }
-
         }
     }
 }

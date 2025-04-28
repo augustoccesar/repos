@@ -1,8 +1,10 @@
 package se.augustocesar.repos.commands;
 
+import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
-public interface Command extends Callable<Integer> {
+public interface Command {
+    Integer run(Appendable output) throws IOException;
+
     Optional<String> help();
 }

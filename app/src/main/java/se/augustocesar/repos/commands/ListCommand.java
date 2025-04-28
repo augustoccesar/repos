@@ -2,6 +2,7 @@ package se.augustocesar.repos.commands;
 
 import se.augustocesar.repos.ReposDir;
 
+import java.io.IOException;
 import java.util.*;
 
 public class ListCommand implements Command {
@@ -35,10 +36,8 @@ public class ListCommand implements Command {
     }
 
     @Override
-    public Integer call() {
-        String output = this.displayTree(this.args.filter);
-
-        System.out.println(output);
+    public Integer run(Appendable output) throws IOException {
+        output.append(this.displayTree(this.args.filter));
 
         return 0;
     }

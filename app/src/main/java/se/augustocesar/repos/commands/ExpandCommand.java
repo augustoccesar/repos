@@ -38,8 +38,8 @@ public class ExpandCommand implements Command {
         }
     }
 
-    private Args args;
-    private Config config;
+    private final Args args;
+    private final Config config;
 
     public ExpandCommand(Args args, final Config config) {
         this.args = args;
@@ -47,18 +47,19 @@ public class ExpandCommand implements Command {
     }
 
     @Override
-    public Integer call() {
+    public Integer run(Appendable output) throws IOException {
         var info = RepositoryInfo.of(this.config, this.args.name);
         if (Files.exists(info.localPath())) {
-            System.out.println(info.localPath());
+            output.append(info.localPath().toString()).append('\n');
+
             return 0;
         }
 
         if (this.args.shouldClone) {
-            System.out.println("Repository not found locally.");
-            System.out.println("Local path: " + info.localPath());
-            System.out.println("Git repo: " + info.cloneUri());
-            System.out.println("Do you want to clone it? (y, N)");
+            output.append("Repository not found locally.").append('\n');
+            output.append("Local path: ").append(info.localPath().toString()).append('\n');
+            output.append("Git repo: ").append(info.cloneUri()).append('\n');
+            output.append("Do you want to clone it? (y, N)").append('\n');
 
             try {
                 var reader = new BufferedReader(new InputStreamReader(System.in));
@@ -66,22 +67,26 @@ public class ExpandCommand implements Command {
 
                 if (response != null && response.equalsIgnoreCase("y")) {
                     if (Git.clone(info.cloneUri(), info.localPath().toString())) {
-                        System.out.println(info.localPath());
+                        output.append(info.localPath().toString()).append('\n');
+
                         return 0;
                     } else {
                         return 1;
                     }
                 } else {
-                    System.out.println("Aborted!");
+                    output.append("Aborted!").append('\n');
+
                     return 1;
                 }
 
             } catch (IOException e) {
-                System.err.println("Failed to read input.");
+                output.append("Failed to read input.").append('\n');
+
                 return 1;
             }
         } else {
-            System.out.println("Repo not found locally.");
+            output.append("Repo not found locally.").append('\n');
+
             return 1;
         }
     }
