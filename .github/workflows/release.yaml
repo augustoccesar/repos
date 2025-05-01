@@ -11,7 +11,7 @@ on:
 
 jobs:
   check_version:
-    name: Check if Version Changed
+    name: Check for version change
     runs-on: ubuntu-latest
     outputs:
       version_changed: ${{ steps.check.outputs.version_changed }}
