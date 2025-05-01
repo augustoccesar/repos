@@ -48,8 +48,10 @@ jobs:
     if: ${{ needs.check_version.outputs.version_changed == 'true' }}
     strategy:
       matrix:
+        # TODO: Add mac x86 and Linux arm + x86
         include:
           - os: macos-latest
+            target: aarch64-apple-darwin
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -71,3 +73,47 @@ jobs:
 
       - name: Build
         run: ./gradlew nativeBuild
+
+      - name: Package Artifacts
+        id: package-artifacts
+        run: |
+          src=$(pwd)
+          stage=
+          case $RUNNER_OS in
+              Linux)
+                  stage=$(mktemp -d)
+                  ;;
+              macOS)
+                  stage=$(mktemp -d -t tmp)
+                  ;;
+          esac
+
+          cp app/build/native/nativeCompile/repos $stage/
+          cd $stage
+
+          RELEASE_VERSION=${{ steps.get_version.outputs.release_version }}
+          ASSET_NAME="repos-$RELEASE_VERSION-${{ matrix.target }}.tar.gz"
+
+          ASSET_PATH="$src/$ASSET_NAME"
+          CHECKSUM_PATH="$ASSET_PATH.sha256"
+
+          echo "asset_path=$ASSET_PATH" >> $GITHUB_OUTPUT
+          echo "checksum_path=$CHECKSUM_PATH" >> $GITHUB_OUTPUT
+
+          tar czf $ASSET_PATH *
+
+          cd $src
+
+          case $RUNNER_OS in
+              Linux)
+                  sha256sum $ASSET_NAME > $CHECKSUM_PATH
+                  ;;
+              macOS)
+                  shasum -a 256 $ASSET_NAME > $CHECKSUM_PATH
+                  ;;
+          esac
+
+      - name: "[TEST] Output artifacts"
+        run: |
+          echo "outputs.asset_path: ${{ steps.package-artifacts.outputs.asset_path }}"
+          echo "outputs.checksum_path: ${{ steps.package-artifacts.outputs.checksum_path }}"
