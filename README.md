@@ -1,5 +1,7 @@
 ## Shortcut functions
 
+- `rclone $1` - Repos clone
+  This is a shortcut for running `repos expand $1 --clone`.
 - `rcd $1` - Repos cd
   This is a shortcut for running `repos expand $1 --clone` and `cd` into the output.
 - `rll $1` - Repos list

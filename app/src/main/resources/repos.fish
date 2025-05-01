@@ -1,5 +1,5 @@
-function __repos_expand_with_clone --argument repo
-    set output (repos expand $repo --clone | tee /dev/tty)
+function __repos_expand_with_clone
+    set output (repos expand --clone $argv | tee /dev/tty)
 
     if test $pipestatus[1] -ne 0
         return 1
@@ -14,6 +14,10 @@ function __repos_expand_with_clone --argument repo
     end
 
     return 1
+end
+
+function rclone
+    __repos_expand_with_clone $argv[1] > /dev/null
 end
 
 function rcd
