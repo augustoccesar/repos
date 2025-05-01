@@ -8,4 +8,8 @@ public class Defaults {
     public static String host() {
         return "github.com";
     }
+
+    public static String editor() {
+        return "code";
+    }
 }

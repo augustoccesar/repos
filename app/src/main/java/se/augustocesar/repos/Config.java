@@ -12,18 +12,32 @@ import java.util.Map;
 public class Config {
     private final String host;
     private final String username;
+    private final String editor;
     private Map<String, Object> index;
     private final Map<String, Object> aliases;
 
-    public Config(String host, String username, Map<String, Object> index, Map<String, Object> aliases) {
+    public Config(
+            String host,
+            String username,
+            String editor,
+            Map<String, Object> index,
+            Map<String, Object> aliases
+    ) {
         this.host = host;
         this.username = username;
+        this.editor = editor;
         this.index = index;
         this.aliases = aliases;
     }
 
     public static Config buildDefault() {
-        return new Config(Defaults.host(), Defaults.username(), new HashMap<>(), new HashMap<>());
+        return new Config(
+                Defaults.host(),
+                Defaults.username(),
+                Defaults.editor(),
+                new HashMap<>(),
+                new HashMap<>()
+        );
     }
 
     static Config load() {
@@ -38,6 +52,7 @@ public class Config {
         return new Config(
                 toml.getString("host"),
                 toml.getString("username"),
+                toml.getString("editor"),
                 getTableAsMap(toml, "index"),
                 getTableAsMap(toml, "aliases")
         );
@@ -64,6 +79,7 @@ public class Config {
 
         map.put("host", this.host);
         map.put("username", this.username);
+        map.put("editor", this.editor);
         map.put("index", this.index);
         map.put("aliases", this.aliases);
 
@@ -83,6 +99,10 @@ public class Config {
 
     public String getUsername() {
         return this.username != null ? this.username : Defaults.username();
+    }
+
+    public String getEditor() {
+        return this.editor != null ? this.editor : Defaults.editor();
     }
 
     public Map<String, Object> getIndex() {

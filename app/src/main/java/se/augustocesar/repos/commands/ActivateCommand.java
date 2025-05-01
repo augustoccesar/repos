@@ -1,5 +1,6 @@
 package se.augustocesar.repos.commands;
 
+import picocli.CommandLine;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Command;
 import se.augustocesar.repos.Shell;
@@ -10,6 +11,9 @@ import java.util.concurrent.Callable;
 
 @Command(name = "activate", mixinStandardHelpOptions = true, description = "Export helpers for shell.")
 public class ActivateCommand implements Callable<Integer> {
+    @CommandLine.ParentCommand
+    private Repos reposCommand;
+
     @Parameters(index = "0", description = "Name of the shell. One of: [${COMPLETION-CANDIDATES}]")
     Shell shell;
 
@@ -21,6 +25,8 @@ public class ActivateCommand implements Callable<Integer> {
             if (stream != null) {
                 byte[] bytes = stream.readAllBytes();
                 String output = new String(bytes);
+
+                output = output.replace("@EDITOR@", reposCommand.config().getEditor());
 
                 System.out.println(output);
 

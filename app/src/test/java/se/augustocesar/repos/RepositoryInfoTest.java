@@ -23,6 +23,7 @@ class RepositoryInfoTest {
         var config = new Config(
                 "github.com",
                 "augustoccesar",
+                "code",
                 indexes,
                 aliases
         );

@@ -1,5 +1,6 @@
 host = "github.com" # By default, will be `github.com`.
 username = "augustoccesar" # By default, it will be the username on the system.
+editor = "code" # By default, it will try opening VsCode with the `code` command.
 
 # Aliases values can be in any format supported by `expand` command.
 [aliases]
