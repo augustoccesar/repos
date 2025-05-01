@@ -48,7 +48,6 @@ public class Config {
 
         Toml toml = new Toml().read(configFile);
 
-
         return new Config(
                 toml.getString("host"),
                 toml.getString("username"),
