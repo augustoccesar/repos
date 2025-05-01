@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  pull_request: # Added for testing. Remove later
+
+  push:
+    branches:
+      - main
+    paths:
+      - "app/build.gradle"
+
+jobs:
+  check_version:
+    name: Check if Version Changed
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check.outputs.version_changed }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check Version
+        id: check
+        run: |
+          new_version=$(grep '^version = ' app/build.gradle | sed -E 's/version = "(.*)"/\1/')
+          old_version=$(git show HEAD^:app/build.gradle | grep '^version = ' | sed -E 's/version = "(.*)"/\1/')
+
+          echo "New version: $new_version"
+          echo "Old version: $old_version"
+
+          if [ "$new_version" = "$old_version" ]; then
+            echo "No version change detected."
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+            echo "new_version=''" >> $GITHUB_OUTPUT
+          else
+            echo "Version change detected."
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+            echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          fi
