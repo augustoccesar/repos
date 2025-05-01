@@ -19,19 +19,22 @@ public class ExpandCommand implements Callable<Integer> {
     private Repos reposCommand;
 
     @Parameters(index = "0", description = """
-            Name of the repo to expand.
+            Name or index of the repo to expand.
+            
+            The index of a repository can be checked on the config.toml file or by running `repos list`.
             
             For cases where the fields are not all present on the name, they will be resolved by:
             
             host:
-                1. What is on the `host` of the config.
+                1. What is on the `host` of the config.toml.
                 2. Default to "github.com".
             
             username:
-                1. What is on the `username` of the config.
+                1. What is on the `username` of the config.toml.
                 2. Default to 'user.name' system property.
             
             Supported formats:
+                - @{index}
                 - git@{host}:{username}/{repo}.git
                 - {host}/{username}/{repo}
                 - {username}/{repo}
