@@ -1,4 +1,4 @@
-function __expand_repo_with_clone --argument repo
+function __repos_expand_with_clone --argument repo
     set output (repos expand $repo --clone | tee /dev/tty)
 
     if test $pipestatus[1] -ne 0
@@ -17,7 +17,7 @@ function __expand_repo_with_clone --argument repo
 end
 
 function rcd
-    set REPO (__expand_repo_with_clone $argv[1])
+    set REPO (__repos_expand_with_clone $argv[1])
 
     if test $status -eq 0
         cd $REPO
@@ -33,7 +33,7 @@ function rll
 end
 
 function red
-    set REPO (__expand_repo_with_clone $argv[1])
+    set REPO (__repos_expand_with_clone $argv[1])
 
     if test $status -eq 0
         @EDITOR@ $REPO
