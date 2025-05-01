@@ -39,7 +39,8 @@ $ repos expand rust-lang/rust
 - `rclone $1` - This is a shortcut for running `repos expand $1 --clone`.
 - `rcd $1` - This is a shortcut for running `repos expand $1 --clone` and `cd` into the output.
 - `rll $1` - This is a shortcut for running `repos list -f $1`, if `$1` is not empty or `repos list` if `$1` is empty.
-- `red $1` - This is a shortcut for running `repos expand $1 --clone` and opening the expanded repository on the configured editor.
+- `red $1` - This is a shortcut for running `repos expand $1 --clone` and opening the expanded repository on the
+  configured editor.
 
 So, with those, some example workflows look like:
 
@@ -78,18 +79,6 @@ $ pwd
 
 ## Installation
 
-Add the binary path to `config.fish`.
-
-```bash
-fish_add_path $HOME/.repos/bin
-```
-
-To use the shortcut functions, also add the following:
-
-```bash
-repos activate fish | source
-```
-
 ### Using the installation script
 
 ```bash
@@ -98,9 +87,12 @@ curl --proto '=https' --tlsv1.2 -LsSf https://raw.githubusercontent.com/augustoc
 
 ### From downloaded binary
 
+Check the available releases for OS and Arch on the [releases page](https://github.com/augustoccesar/repos/releases).
+
 ```bash
+curl -sSL "https://github.com/augustoccesar/repos/releases/download/<version>/repos-<version>-<arch>-<os>.tar.gz" | tar -xz -C "<download_path>"
 mkdir -p $HOME/.repos/bin
-mv <downloadpath>/repos $HOME/.repos/bin
+mv <download_path>/repos $HOME/.repos/bin
 ```
 
 ### From source
@@ -110,5 +102,20 @@ mv <downloadpath>/repos $HOME/.repos/bin
 gradle install
 ```
 
+Add the binary path to $PATH
+
+```bash
+# On fish, add the following to config.fish
+fish_add_path $HOME/.repos/bin
+
+# On other shells, add the export to the shell config
+export PATH="$PATH:$HOME/.repos/bin"
+```
+
+To use the shortcut functions (currently only on fish shell), also add the following:
+
+```bash
+repos activate fish | source
+```
 
 
