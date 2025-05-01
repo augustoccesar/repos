@@ -1,3 +1,5 @@
+name: "Checkstyle"
+
 on:
   pull_request:
 
