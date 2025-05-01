@@ -90,7 +90,13 @@ To use the shortcut functions, also add the following:
 repos activate fish | source
 ```
 
-### From downloaded binary (not available yet)
+### Using the installation script
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://raw.githubusercontent.com/augustoccesar/repos/refs/heads/master/install.sh | sh
+```
+
+### From downloaded binary
 
 ```bash
 mkdir -p $HOME/.repos/bin
