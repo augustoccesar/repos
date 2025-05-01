@@ -1,13 +1,19 @@
 function __expand_repo_with_clone --argument repo
-    set REPO (repos expand $repo --clone | tee /dev/tty)
+    set output (repos expand $repo --clone | tee /dev/tty)
 
-    if test $pipestatus[1] -eq 0
-        echo $REPO
-
-        return 0
-    else
+    if test $pipestatus[1] -ne 0
         return 1
     end
+
+    set lines (string split \n -- $output | string trim --right)
+    for i in (seq (count $lines) -1 1)
+        if test -n "$lines[$i]"
+            echo $lines[$i]
+            return 0
+        end
+    end
+
+    return 1
 end
 
 function rcd
