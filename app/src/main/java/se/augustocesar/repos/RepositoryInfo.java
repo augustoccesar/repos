@@ -9,6 +9,13 @@ public record RepositoryInfo(String host, String username, String name) {
     static final Pattern INDEX = Pattern.compile("^@(\\d+)$");
 
     public static RepositoryInfo of(Config config, String input) {
+        if (config.getAliases() != null) {
+            var aliased = config.getAliases().get(input);
+            if (aliased != null) {
+                input = (String) aliased;
+            }
+        }
+
         var indexMatcher = INDEX.matcher(input);
         if (indexMatcher.matches()) {
             var indexInput = indexMatcher.group(1);

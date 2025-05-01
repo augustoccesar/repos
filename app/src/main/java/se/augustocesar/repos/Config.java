@@ -13,15 +13,17 @@ public class Config {
     private final String host;
     private final String username;
     private Map<String, Object> index;
+    private final Map<String, Object> aliases;
 
-    public Config(String host, String username, Map<String, Object> index) {
+    public Config(String host, String username, Map<String, Object> index, Map<String, Object> aliases) {
         this.host = host;
         this.username = username;
         this.index = index;
+        this.aliases = aliases;
     }
 
     public static Config buildDefault() {
-        return new Config(Defaults.host(), Defaults.username(), new HashMap<>());
+        return new Config(Defaults.host(), Defaults.username(), new HashMap<>(), new HashMap<>());
     }
 
     static Config load() {
@@ -32,10 +34,12 @@ public class Config {
 
         Toml toml = new Toml().read(configFile);
 
+
         return new Config(
                 toml.getString("host"),
                 toml.getString("username"),
-                toml.getTable("index").toMap()
+                getTableAsMap(toml, "index"),
+                getTableAsMap(toml, "aliases")
         );
     }
 
@@ -61,8 +65,16 @@ public class Config {
         map.put("host", this.host);
         map.put("username", this.username);
         map.put("index", this.index);
+        map.put("aliases", this.aliases);
 
         return map;
+    }
+
+    private static Map<String, Object> getTableAsMap(final Toml toml, String key) {
+        var table = toml.getTable(key);
+        if (table == null) return null;
+
+        return table.toMap();
     }
 
     public String getHost() {
@@ -75,5 +87,9 @@ public class Config {
 
     public Map<String, Object> getIndex() {
         return index;
+    }
+
+    public Map<String, Object> getAliases() {
+        return aliases;
     }
 }
