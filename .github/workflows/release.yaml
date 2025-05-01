@@ -40,3 +40,34 @@ jobs:
             echo "version_changed=true" >> $GITHUB_OUTPUT
             echo "new_version=$new_version" >> $GITHUB_OUTPUT
           fi
+
+  build:
+    needs: [ check_version ]
+    name: Build
+    runs-on: ${{matrix.os}}
+    if: ${{ needs.check_version.outputs.version_changed == 'true' }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Version from build.gradle
+        id: get_version
+        run: |
+          VERSION=$(grep '^version = ' app/build.gradle | sed -E 's/version = "(.*)"/\1/')
+          echo "release_version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "graalvm"
+          java-version: "23.0.1"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew nativeBuild
