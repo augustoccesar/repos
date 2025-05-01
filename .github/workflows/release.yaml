@@ -1,8 +1,6 @@
 name: Release
 
 on:
-  pull_request: # Added for testing. Remove later
-
   push:
     branches:
       - main
@@ -113,7 +111,12 @@ jobs:
                   ;;
           esac
 
-      - name: "[TEST] Output artifacts"
-        run: |
-          echo "outputs.asset_path: ${{ steps.package-artifacts.outputs.asset_path }}"
-          echo "outputs.checksum_path: ${{ steps.package-artifacts.outputs.checksum_path }}"
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.release_version }}
+          files: |
+            ${{ steps.package-artifacts.outputs.asset_path }}
+            ${{ steps.package-artifacts.outputs.checksum_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
