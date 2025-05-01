@@ -19,7 +19,7 @@ public class ExpandCommand implements Callable<Integer> {
     private Repos reposCommand;
 
     @Parameters(index = "0", description = """
-            Name or index of the repo to expand.
+            Name or index of the repository to expand.
             
             The index of a repository can be checked on the config.toml file or by running `repos list`.
             
@@ -35,10 +35,10 @@ public class ExpandCommand implements Callable<Integer> {
             
             Supported formats:
                 - @{index}
-                - git@{host}:{username}/{repo}.git
-                - {host}/{username}/{repo}
-                - {username}/{repo}
-                - {repo}
+                - git@{host}:{username}/{repository}.git
+                - {host}/{username}/{repository}
+                - {username}/{repository}
+                - {repository}
             """)
     String name;
 
@@ -62,7 +62,7 @@ public class ExpandCommand implements Callable<Integer> {
                 if (!this.skipPrompt) {
                     System.out.println("Repository not found locally.");
                     System.out.println("Local path: " + info.localPath());
-                    System.out.println("Git repo: " + info.cloneUri());
+                    System.out.println("Git repository: " + info.cloneUri());
                     System.out.println("Do you want to clone it? (y, N)");
 
                     var reader = new BufferedReader(new InputStreamReader(System.in));
@@ -88,7 +88,7 @@ public class ExpandCommand implements Callable<Integer> {
                 return 1;
             }
         } else {
-            System.out.println("Repo not found locally.");
+            System.out.println("Repository not found locally.");
 
             return 1;
         }
