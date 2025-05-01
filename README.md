@@ -1,10 +1,10 @@
 # repos
 
-Make it easier to manage local repositories.
+An opinionated way to manage local repositories.
 
-By default the base path of the project will be `~/repos`.
+By default, the base path of the project will be `$HOME/repos`.
 So all the repositories will be cloned and managed from that. So, for example, the repository
-`github.com/rust-lang/rust` will be located at `~/repos/github.com/rust-lang/rust`.
+`github.com/rust-lang/rust` will be located at `$HOME/repos/github.com/rust-lang/rust`.
 
 The `expand` command will return the path to the repository locally. If the repository
 does not exist locally, it will show you that and prompt to do the expand with the `--clone`
@@ -12,91 +12,97 @@ argument, which will clone the repository and after that, it will be able to exp
 
 ```console
 $ repos expand rust-lang/rust
-Repo not found locally in /Users/username/repos/github.com/rust-lang/rust.
-Run with --clone if want to clone it.
+Repository not found locally.
 
-$ repos expand rust-lang/rust --clone
-Repo not found locally.
-- Local path:	/Users/username/repos/github.com/rust-lang/rust
-- Git repo:	git@github.com:rust-lang/rust.git
-Do you want to clone it? (y/n - only 'y' continue)
+$ repos expand --clone rust-lang/rust
+Repository not found locally.
+Local path: /Users/username/repos/github.com/rust-lang/rust
+Git repository: git@github.com:rust-lang/rust
+Do you want to clone it? (y, N)
 y
-Cloning repo...
-/Users/username/repos/github.com/rust-lang/rust%
+Cloning into '/Users/username/repos/github.com/rust-lang/rust'...
+remote: Enumerating objects: 2964616, done.
+remote: Counting objects: 100% (856/856), done.
+remote: Compressing objects: 100% (490/490), done.
+remote: Total 2964616 (delta 593), reused 366 (delta 366), pack-reused 2963760 (from 2)
+Receiving objects: 100% (2964616/2964616), 643.65 MiB | 15.51 MiB/s, done.
+Resolving deltas: 100% (2302669/2302669), done.
+Updating files: 100% (53047/53047), done.
+/Users/username/repos/github.com/rust-lang/rust
 
 $ repos expand rust-lang/rust
-/Users/username/repos/github.com/rust-lang/rust%
+/Users/username/repos/github.com/rust-lang/rust
 ```
 
-The argument to the `expand` command (and to the `add-alias`) can be one of the following
-formats:
+## Shortcut functions
 
-- `git@{host}:{username}/{repo}.git`
-  - This format will be used as is.
-- `{host}/{username}/{repo}`
-  - This format will be used as is.
-- `{username}/{repo}`
-  - This format will have the {host} be resolved on the following order:
-    1. What is on the `default_host` of the config.
-    2. Default to "github.com".
-- `{repo}`
-  - This format will have the `host` be resolved on the following order:
-    1. What is on the `default_host` of the config.
-    2. Default to "github.com".
-  - And the `username` resolved in the following order:
-    1. What is on the `default_username` of the config.
-    2. Default to `whoami::username()`.
+- `rclone $1` - This is a shortcut for running `repos expand $1 --clone`.
+- `rcd $1` - This is a shortcut for running `repos expand $1 --clone` and `cd` into the output.
+- `rll $1` - This is a shortcut for running `repos list -f $1`, if `$1` is not empty or `repos list` if `$1` is empty.
+- `red $1` - This is a shortcut for running `repos expand $1 --clone` and opening the expanded repository on the configured editor.
 
-You can add an alias to an expand so that it is easier to access
-
-```console
-$ repos config add-alias rust rust-lang/rust
-Alias added:
-  rust => /Users/username/repos/github.com/rust-lang/rust
-```
-
-So now when you run `expand` it will point to the alias
-
-```console
-$ repos expand rust
-/Users/username/repos/github.com/rust-lang/rust%
-```
-
-For more details about things that are configurable, check `repos config --help`.
-
-### Config
-
-As of now, some of the configuration file can be managed via the `repos config`. But not all of it.
-For example, `home_path` can be set on the `$REPOS_PATH/.config.json`, but is not managed via the config
-on the CLI (as of now).
-
-For better details on the avaialble config, check the [config handling file](src/config.rs).
-
-### Example workflows
-
-#### List with filter and cd by index
+So, with those, some example workflows look like:
 
 ```bash
-> repos list -f dns
-repos
-└ github.com
-  ├ lus
-  │ └ (53) libdns-rs
-  ├ libdns
-  │ ├ (55) cloudflare
-  │ └ (56) libdns
-  ├ caddy-dns
-  │ └ (61) cloudflare
-  └ hickory-dns
-    └ (68) hickory-dns
+$ rll dns
+└─ github.com
+   ├─ mentimeter
+   │  └─ (7) caddy-dns-linkup
+   └─ hickory-dns
+      └─ (43) hickory-dns
 
-> rcd @61
-> pwd
-/repos/github.com/caddy-dns/cloudflare
+$ rcd @7
+$ pwd
+/Users/username/repos/github.com/mentimeter/caddy-dns-linkup 
 ```
-
-### Install from source
 
 ```bash
-cargo install --path .
+$ rcd remkop/picocli
+Repository not found locally.
+Local path: /Users/username/repos/github.com/remkop/picocli
+Git repository: git@github.com:remkop/picocli
+Do you want to clone it? (y, N)
+y
+Cloning into '/Users/username/repos/github.com/remkop/picocli'...
+remote: Enumerating objects: 52173, done.
+remote: Counting objects: 100% (1023/1023), done.
+remote: Compressing objects: 100% (431/431), done.
+remote: Total 52173 (delta 756), reused 597 (delta 588), pack-reused 51150 (from 3)
+Receiving objects: 100% (52173/52173), 83.95 MiB | 14.78 MiB/s, done.
+Resolving deltas: 100% (32018/32018), done.
+/Users/username/repos/github.com/remkop/picocli
+
+$ pwd
+/Users/username/repos/github.com/remkop/picocli
 ```
+
+## Installation
+
+Add the binary path to `config.fish`.
+
+```bash
+fish_add_path $HOME/.repos/bin
+```
+
+To use the shortcut functions, also add the following:
+
+```bash
+repos activate fish | source
+```
+
+### From downloaded binary (not available yet)
+
+```bash
+mkdir -p $HOME/.repos/bin
+mv <downloadpath>/repos $HOME/.repos/bin
+```
+
+### From source
+
+```bash
+# Gradle install compile native and move the result binary to $HOME/.repos/bin
+gradle install
+```
+
+
+

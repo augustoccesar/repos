@@ -1,0 +1,10 @@
+{
+  "resources": [
+    {
+      "pattern": "repos\\.fish"
+    },
+    {
+      "pattern": "version\\.properties"
+    }
+  ]
+}
