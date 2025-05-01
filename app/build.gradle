@@ -4,6 +4,8 @@ plugins {
     id 'org.graalvm.buildtools.native' version '0.10.4'
 }
 
+version = "0.1.0"
+
 repositories {
     mavenCentral()
 }
@@ -42,6 +44,15 @@ tasks.register('install', Copy) {
     from "build/native/nativeCompile"
     into "${System.env.HOME}/.repos/bin"
     include "repos"
+}
+
+def appVersion = project.version
+tasks.named('processResources') {
+    inputs.property("version", appVersion)
+
+    filesMatching("version.properties") {
+        expand(version: appVersion)
+    }
 }
 
 graalvmNative {
