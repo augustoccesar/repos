@@ -42,6 +42,9 @@ public class ExpandCommand implements Callable<Integer> {
     @Option(names = {"-c", "--clone"}, description = "Clone the repository if not exists locally.")
     boolean shouldClone;
 
+    @Option(names = {"-y"}, description = "Skip prompts by automatic confirming.")
+    boolean skipPrompt;
+
     @Override
     public Integer call() {
         var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
@@ -52,29 +55,30 @@ public class ExpandCommand implements Callable<Integer> {
         }
 
         if (this.shouldClone) {
-            System.out.println("Repository not found locally.");
-            System.out.println("Local path: " + info.localPath());
-            System.out.println("Git repo: " + info.cloneUri());
-            System.out.println("Do you want to clone it? (y, N)");
-
             try {
-                var reader = new BufferedReader(new InputStreamReader(System.in));
-                var response = reader.readLine();
+                if (!this.skipPrompt) {
+                    System.out.println("Repository not found locally.");
+                    System.out.println("Local path: " + info.localPath());
+                    System.out.println("Git repo: " + info.cloneUri());
+                    System.out.println("Do you want to clone it? (y, N)");
 
-                if (response != null && response.equalsIgnoreCase("y")) {
-                    if (Git.clone(info.cloneUri(), info.localPath().toString())) {
-                        System.out.println(info.localPath());
+                    var reader = new BufferedReader(new InputStreamReader(System.in));
+                    var response = reader.readLine();
 
-                        return 0;
-                    } else {
+                    if ((response == null || !response.equalsIgnoreCase("y"))) {
+                        System.out.println("Aborted!");
+
                         return 1;
                     }
-                } else {
-                    System.out.println("Aborted!");
-
-                    return 1;
                 }
 
+                if (Git.clone(info.cloneUri(), info.localPath().toString())) {
+                    System.out.println(info.localPath());
+
+                    return 0;
+                } else {
+                    return 1;
+                }
             } catch (IOException e) {
                 System.out.println("Failed to read input.");
 
