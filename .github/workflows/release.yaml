@@ -114,7 +114,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.get_version.release_version }}
+          tag_name: ${{ steps.get_version.outputs.release_version }}
           files: |
             ${{ steps.package-artifacts.outputs.asset_path }}
             ${{ steps.package-artifacts.outputs.checksum_path }}
