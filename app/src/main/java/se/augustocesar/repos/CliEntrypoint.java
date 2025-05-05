@@ -29,6 +29,8 @@ public class CliEntrypoint {
         var config = Config.load();
 
         var repos = new Repos(config);
-        new CommandLine(repos).execute(args);
+        var status = new CommandLine(repos).execute(args);
+
+        System.exit(status);
     }
 }
