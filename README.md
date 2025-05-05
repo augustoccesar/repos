@@ -37,6 +37,7 @@ $ repos expand rust-lang/rust
 ## Shortcut functions
 
 - `rclone $1` - This is a shortcut for running `repos expand $1 --clone`.
+- `ropen $1` - This is a shortcut for running `repos expand $1 --mode remote` and opening the URL on the browser.
 - `rcd $1` - This is a shortcut for running `repos expand $1 --clone` and `cd` into the output.
 - `rll $1` - This is a shortcut for running `repos list -f $1`, if `$1` is not empty or `repos list` if `$1` is empty.
 - `red $1` - This is a shortcut for running `repos expand $1 --clone` and opening the expanded repository on the

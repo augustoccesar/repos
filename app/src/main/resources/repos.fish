@@ -20,6 +20,15 @@ function rclone
     __repos_expand_with_clone $argv[1] > /dev/null
 end
 
+function ropen
+    set REPO (repos expand -m remote $argv[1])
+
+    if test $status -eq 0
+        # TODO: Use xdg-open for Linux, when it is added as an option.
+        open $REPO
+    end
+end
+
 function rcd
     set REPO (__repos_expand_with_clone $argv[1])
 

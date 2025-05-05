@@ -16,6 +16,11 @@ import se.augustocesar.repos.RepositoryInfo;
 
 @Command(name = "expand", mixinStandardHelpOptions = true, description = "Expands the passed on repository name to the full path.")
 public class ExpandCommand implements Callable<Integer> {
+    private enum Mode {
+        local,
+        remote
+    }
+
     @ParentCommand
     private Repos reposCommand;
 
@@ -49,14 +54,24 @@ public class ExpandCommand implements Callable<Integer> {
     @Option(names = {"-y"}, description = "Skip prompts by automatic confirming.")
     boolean skipPrompt;
 
+    @Option(names = {"-m", "--mode"}, description = "Which type of expand to do. One of: [${COMPLETION-CANDIDATES}]", defaultValue = "local")
+    Mode mode;
+
     @Override
     public Integer call() {
+        return switch (this.mode) {
+            case Mode.local -> expandLocal();
+            case Mode.remote -> expandRemote();
+        };
+    }
+
+    private int expandLocal() {
         if (this.name.equals("@")) {
             System.out.println(Constants.REPOS_DIR_PATH);
-            
+
             return 0;
         }
-        
+
         var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
         if (Files.exists(info.localPath())) {
             System.out.println(info.localPath());
@@ -99,5 +114,13 @@ public class ExpandCommand implements Callable<Integer> {
 
             return 1;
         }
+    }
+
+    private int expandRemote() {
+        var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
+
+        System.out.println(info.remoteUri());
+
+        return 0;
     }
 }

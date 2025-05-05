@@ -54,4 +54,8 @@ public record RepositoryInfo(String host, String username, String name) {
     public String cloneUri() {
         return "git@" + this.host + ":" + this.username + "/" + this.name;
     }
+
+    public String remoteUri() {
+        return "https://" + this.host + "/" + this.username + "/" + this.name;
+    }
 }
