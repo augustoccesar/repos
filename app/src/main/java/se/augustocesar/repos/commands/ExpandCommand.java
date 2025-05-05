@@ -59,20 +59,32 @@ public class ExpandCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        String name = this.name;
+        if (this.name.equals(".")) {
+            String workingDir = System.getProperty("user.dir");
+            if (workingDir.startsWith(Constants.REPOS_DIR_PATH)) {
+                name = workingDir.replace(Constants.REPOS_DIR_PATH + "/", "");
+            } else {
+                System.err.println("This folder is not managed by repos.");
+
+                return 1;
+            }
+        }
+
         return switch (this.mode) {
-            case Mode.local -> expandLocal();
-            case Mode.remote -> expandRemote();
+            case Mode.local -> expandLocal(name);
+            case Mode.remote -> expandRemote(name);
         };
     }
 
-    private int expandLocal() {
-        if (this.name.equals("@")) {
+    private int expandLocal(final String name) {
+        if (name.equals("@")) {
             System.out.println(Constants.REPOS_DIR_PATH);
 
             return 0;
         }
 
-        var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
+        var info = RepositoryInfo.of(this.reposCommand.config(), name);
         if (Files.exists(info.localPath())) {
             System.out.println(info.localPath());
 
@@ -116,8 +128,8 @@ public class ExpandCommand implements Callable<Integer> {
         }
     }
 
-    private int expandRemote() {
-        var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
+    private int expandRemote(final String name) {
+        var info = RepositoryInfo.of(this.reposCommand.config(), name);
 
         System.out.println(info.remoteUri());
 
