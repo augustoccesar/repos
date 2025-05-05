@@ -10,6 +10,7 @@ import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Option;
+import se.augustocesar.repos.Constants;
 import se.augustocesar.repos.Git;
 import se.augustocesar.repos.RepositoryInfo;
 
@@ -50,6 +51,12 @@ public class ExpandCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        if (this.name.equals("@")) {
+            System.out.println(Constants.REPOS_DIR_PATH);
+            
+            return 0;
+        }
+        
         var info = RepositoryInfo.of(this.reposCommand.config(), this.name);
         if (Files.exists(info.localPath())) {
             System.out.println(info.localPath());
