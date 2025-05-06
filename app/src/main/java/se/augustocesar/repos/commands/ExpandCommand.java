@@ -1,6 +1,7 @@
 package se.augustocesar.repos.commands;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -24,8 +25,9 @@ public class ExpandCommand implements Callable<Integer> {
     @ParentCommand
     private Repos reposCommand;
 
-    @Parameters(index = "0", description = """
-            Name or index of the repository to expand.
+    @Parameters(index = "0", defaultValue = "", description = """
+            Name or index of the repository to expand. If no value is provided, it will assume is the current working
+            directory.
             
             The index of a repository can be checked on the config.toml file or by running `repos list`.
             
@@ -60,12 +62,12 @@ public class ExpandCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         String name = this.name;
-        if (this.name.equals(".")) {
+        if (this.name.isEmpty()) {
             String workingDir = System.getProperty("user.dir");
-            if (workingDir.startsWith(Constants.REPOS_DIR_PATH)) {
+            if (workingDir.startsWith(Constants.REPOS_DIR_PATH) && isGitRepo(workingDir)) {
                 name = workingDir.replace(Constants.REPOS_DIR_PATH + "/", "");
             } else {
-                System.err.println("This folder is not managed by repos.");
+                System.err.println("This folder is not a repository managed by repos.");
 
                 return 1;
             }
@@ -134,5 +136,20 @@ public class ExpandCommand implements Callable<Integer> {
         System.out.println(info.remoteUri());
 
         return 0;
+    }
+
+    private boolean isGitRepo(final String path) {
+        var dir = new File(path);
+        File[] files = dir.listFiles();
+
+        if (files == null) return false;
+
+        for (var file : files) {
+            if (file.getName().equals(".git") || file.isDirectory()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
