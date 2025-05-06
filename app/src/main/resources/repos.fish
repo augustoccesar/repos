@@ -16,11 +16,11 @@ function __repos_expand_with_clone
     return 1
 end
 
-function rclone
+function rcl
     __repos_expand_with_clone $argv[1] > /dev/null
 end
 
-function ropen
+function rop
     set REPO (repos expand -m remote $argv[1])
 
     if test $status -eq 0
