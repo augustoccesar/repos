@@ -26,11 +26,21 @@ public class CliEntrypoint {
             System.exit(1);
         }
 
-        var config = Config.load();
+        try {
+            var gitHub = new GitHub();
+            var config = Config.load();
 
-        var repos = new Repos(config);
-        var status = new CommandLine(repos).execute(args);
+            String providedVersion = new VersionProvider().getVersion()[0];
+            var version = Version.parse(providedVersion);
 
-        System.exit(status);
+            var repos = new Repos(config, version, gitHub);
+
+            var status = new CommandLine(repos).execute(args);
+
+            System.exit(status);
+        } catch (Version.InvalidFormat e) {
+            System.err.println("Failed to resolve CLI version.");
+            System.exit(1);
+        }
     }
 }
