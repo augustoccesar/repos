@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation 'info.picocli:picocli:4.7.6'
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
+    implementation 'org.apache.commons:commons-compress:1.26.1'
 
     annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
 
@@ -64,6 +65,7 @@ graalvmNative {
             imageName = "repos"
             mainClass = "se.augustocesar.repos.CliEntrypoint"
             buildArgs.add("-Os")
+            buildArgs.add('--enable-url-protocols=https')
         }
     }
 }

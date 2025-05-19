@@ -14,6 +14,7 @@ import se.augustocesar.repos.VersionProvider;
                 ActivateCommand.class,
                 ExpandCommand.class,
                 ListCommand.class,
+                UpdateCommand.class,
         }
 )
 public record Repos(Config config, Version version, GitHub github) {
