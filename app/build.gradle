@@ -40,7 +40,7 @@ tasks.named('test') {
 }
 
 tasks.register('install', Copy) {
-    dependsOn nativeBuild
+    dependsOn nativeCompile
     from "build/native/nativeCompile"
     into "${System.env.HOME}/.repos/bin"
     include "repos"
