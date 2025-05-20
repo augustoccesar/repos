@@ -78,24 +78,30 @@ public class UpdateCommand implements Callable<Integer> {
         System.out.printf("Updating from %s to %s\n", currentVersion, latestRelease.get().version());
 
         var tempCompressedFile = File.createTempFile("repos-update", ".tar.gz");
-        if (!downloadFile(latestRelease.get().downloadUrl(), tempCompressedFile.getPath())) {
-            System.err.println("Failed to download new update");
+        try {
+            if (!downloadFile(latestRelease.get().downloadUrl(), tempCompressedFile.getPath())) {
+                System.err.println("Failed to download new update");
 
-            return 1;
+                return 1;
+            }
+
+            Path decompressedPath = decompressFile(tempCompressedFile);
+            if (decompressedPath == null) {
+                System.err.println("Failed to decompress update");
+
+                return 1;
+            }
+
+            Files.move(decompressedPath, executable.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Finished updating! 🎉");
+
+            return 0;
+        } finally {
+            if (!tempCompressedFile.delete()) {
+                logger.warning("Failed to delete temporary compressed file: " + tempCompressedFile.getPath());
+            }
         }
-
-        Path decompressedPath = decompressFile(tempCompressedFile);
-        if (decompressedPath == null) {
-            System.err.println("Failed to decompress update");
-
-            return 1;
-        }
-
-        Files.copy(decompressedPath, executable.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-        System.out.println("Finished updating! 🎉");
-
-        return 0;
     }
 
     private static Path decompressFile(File input) throws IOException {
