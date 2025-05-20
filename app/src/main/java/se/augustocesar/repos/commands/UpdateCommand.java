@@ -51,6 +51,7 @@ public class UpdateCommand implements Callable<Integer> {
 
         File executable = new File(installationLocation.toURI());
         if (executable.isDirectory()) {
+            // NOTE: This should only happen if tyring to run update with a Gradle run/nativeRun.
             System.err.println("""
                     Current executable is a directory. This means that the current run is probably a development one.
                     Skipping update...
