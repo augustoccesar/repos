@@ -20,6 +20,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -34,10 +35,14 @@ public class UpdateCommand implements Callable<Integer> {
     @CommandLine.ParentCommand
     private Repos reposCommand;
 
+    @CommandLine.Option(
+            names = {"--skip-cache"},
+            description = "Force remote fetching of latest release by skipping the local cache"
+    )
+    boolean skipCache;
+
     @Override
     public Integer call() throws Exception {
-        OS os = OS.fromSystem();
-        Arch arch = Arch.fromSystem();
         URL installationLocation = getClass()
                 .getProtectionDomain()
                 .getCodeSource()
@@ -54,28 +59,26 @@ public class UpdateCommand implements Callable<Integer> {
             return 1;
         }
 
-        // TODO: Make some sort of caching for this and allow it to be skipped if forced to.
-        GitHub.Release latestRelease = reposCommand
+        Optional<GitHub.Release> latestRelease = this.reposCommand
                 .github()
-                .fetchLatestRelease(os, arch);
+                .fetchLatestRelease(OS.fromSystem(), Arch.fromSystem(), !skipCache);
 
-        if (latestRelease == null) {
+        if (latestRelease.isEmpty()) {
             System.out.println("Could not find a new release");
 
             return 0;
         }
 
-        if (!currentVersion.isOlderThan(latestRelease.version())) {
+        if (!currentVersion.isOlderThan(latestRelease.get().version())) {
             System.out.printf("Already on the latest release (%s)\n", currentVersion);
 
             return 0;
         }
 
-
-        System.out.printf("Updating from %s to %s\n", currentVersion, latestRelease.version());
+        System.out.printf("Updating from %s to %s\n", currentVersion, latestRelease.get().version());
 
         var tempCompressedFile = File.createTempFile("repos-update", ".tar.gz");
-        if (!downloadFile(latestRelease.downloadUrl(), tempCompressedFile.getPath())) {
+        if (!downloadFile(latestRelease.get().downloadUrl(), tempCompressedFile.getPath())) {
             System.err.println("Failed to download new update");
 
             return 1;
@@ -95,7 +98,7 @@ public class UpdateCommand implements Callable<Integer> {
         return 0;
     }
 
-    private Path decompressFile(File input) throws IOException {
+    private static Path decompressFile(File input) throws IOException {
         var tempUncompressedFile = File.createTempFile("repos", "");
 
         try (
