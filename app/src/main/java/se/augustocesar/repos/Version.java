@@ -13,7 +13,7 @@ public record Version(int major, int minor, int patch) implements Comparable<Ver
 
     public static Version parse(final String value) throws InvalidFormat {
         if (value == null) {
-            return null;
+            throw new InvalidFormat();
         }
 
         String[] parts = value.split("\\.");
