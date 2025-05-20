@@ -12,6 +12,6 @@ public enum Color {
     }
 
     public String apply(String input) {
-        return code + input + RESET;
+        return this.code + input + RESET;
     }
 }
