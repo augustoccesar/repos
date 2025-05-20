@@ -5,7 +5,7 @@ import se.augustocesar.repos.commands.Repos;
 
 import java.io.File;
 import java.io.IOException;
-
+import java.util.Optional;
 
 public class CliEntrypoint {
     static void setupSystem() throws IOException {
@@ -26,11 +26,36 @@ public class CliEntrypoint {
             System.exit(1);
         }
 
-        var config = Config.load();
+        try {
+            var gitHub = new GitHub();
+            var config = Config.load();
 
-        var repos = new Repos(config);
-        var status = new CommandLine(repos).execute(args);
+            String providedVersion = new VersionProvider().getVersion()[0];
+            var version = Version.parse(providedVersion);
 
-        System.exit(status);
+            var repos = new Repos(config, version, gitHub);
+
+            CommandLine cmd = new CommandLine(repos);
+            CommandLine.ParseResult result = cmd.parseArgs(args);
+
+            String subcommand = result.subcommand() != null
+                    ? result.subcommand().commandSpec().name()
+                    : null;
+
+            if (!"update".equals(subcommand)) {
+                Optional<GitHub.Release> latestRelease = gitHub.fetchLatestRelease(OS.fromSystem(), Arch.fromSystem(), true);
+                latestRelease.ifPresent(release -> {
+                    if (release.version().isNewerThan(version)) {
+                        System.out.println(Color.YELLOW.apply("New version available! Use 'repos update' to update the CLI.\n"));
+                    }
+                });
+            }
+
+            int status = cmd.execute(args);
+            System.exit(status);
+        } catch (Version.InvalidFormat e) {
+            System.err.println("Failed to resolve CLI version.");
+            System.exit(1);
+        }
     }
 }
