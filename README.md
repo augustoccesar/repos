@@ -83,7 +83,7 @@ $ pwd
 ### Using the installation script
 
 ```bash
-curl --proto '=https' --tlsv1.2 -LsSf https://raw.githubusercontent.com/augustoccesar/repos/refs/heads/master/install.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://raw.githubusercontent.com/augustoccesar/repos/refs/heads/main/install.sh | sh
 ```
 
 ### From downloaded binary
