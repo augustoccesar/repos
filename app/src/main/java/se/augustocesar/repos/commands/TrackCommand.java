@@ -69,6 +69,8 @@ public class TrackCommand implements Callable<Integer> {
         Files.move(Path.of(workingDir), repo.localPath());
         System.out.println("Done! 🎉");
 
+        System.out.println(repo.localPath());
+
         return 0;
     }
 }
