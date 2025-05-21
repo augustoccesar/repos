@@ -16,6 +16,24 @@ function __repos_expand_with_clone
     return 1
 end
 
+function __repos_track
+    set output (repos track | tee /dev/tty)
+
+    if test $pipestatus[1] -ne 0
+        return 1
+    end
+
+    set lines (string split \n -- $output | string trim --right)
+    for i in (seq (count $lines) -1 1)
+        if test -n "$lines[$i]"
+            echo $lines[$i]
+            return 0
+        end
+    end
+
+    return 1
+end
+
 function rcl
     __repos_expand_with_clone $argv[1] > /dev/null
 end
@@ -50,5 +68,13 @@ function red
 
     if test $status -eq 0
         @EDITOR@ $REPO
+    end
+end
+
+function rtr
+    set REPO (__repos_track)
+
+    if test $status -eq 0
+        cd $REPO
     end
 end

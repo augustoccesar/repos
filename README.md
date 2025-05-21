@@ -42,6 +42,7 @@ $ repos expand rust-lang/rust
 - `rll $1` - (as in "repos-ls-l") This is a shortcut for running `repos list -f $1`, if `$1` is not empty or `repos list` if `$1` is empty.
 - `red $1` - (as in "repos-edit") This is a shortcut for running `repos expand $1 --clone` and opening the expanded repository on the
   configured editor.
+- `rtr`    - (as in "repos-track") This is a shortcut for running `repos track` on the working directory and `cd` into the output.
 
 So, with those, some example workflows look like:
 

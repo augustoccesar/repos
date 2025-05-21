@@ -14,6 +14,7 @@ import se.augustocesar.repos.VersionProvider;
                 ActivateCommand.class,
                 ExpandCommand.class,
                 ListCommand.class,
+                TrackCommand.class,
                 UpdateCommand.class,
         }
 )
