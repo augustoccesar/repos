@@ -4,40 +4,38 @@ on:
   pull_request:
 
 jobs:
-  checkstyle:
-    name: Checkstyle
+  check:
+    name: Check and Clippy
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --all
+      - run: rustup component add clippy
+      - run: cargo clippy
+
+  fmt:
+    name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "graalvm"
-          java-version: "23.0.1"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Run Checkstyle
-        run: ./gradlew check
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup component add rustfmt
+      - run: cargo fmt --all --check
 
   test:
-    name: Test
-    runs-on: ubuntu-latest
+    name: Test Suite (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "graalvm"
-          java-version: "23.0.1"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Run Tests
-        run: ./gradlew test
+      - run: cd $GITHUB_WORKSPACE && cargo test --all-features
