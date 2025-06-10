@@ -1,12 +1,6 @@
-.vscode
-.idea
-.settings
-**/.project
-**/.factorypath
-**/.classpath
 **/.DS_Store
 
+.vscode
+.idea
+
 /target
-.gradle
-build
-**/bin
