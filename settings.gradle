@@ -1,5 +1,0 @@
-plugins {
-}
-
-rootProject.name = 'repos'
-include('app')
