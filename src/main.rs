@@ -1,4 +1,8 @@
+use std::process::exit;
+
 use clap::{Parser, Subcommand};
+
+mod commands;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -9,13 +13,18 @@ struct Cli {
 }
 
 #[derive(Subcommand)]
-enum Commands {}
+enum Commands {
+    #[clap(about = "Expands the passed on repository name to the full path")]
+    Expand(commands::ExpandArgs),
+}
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    match &cli.command {
-        _ => todo!(),
-    }
+    let status = match &cli.command {
+        Commands::Expand(args) => commands::handle_expand(args).await,
+    }?;
+
+    exit(status);
 }
