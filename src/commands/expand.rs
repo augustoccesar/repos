@@ -1,6 +1,6 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow};
 
 #[derive(clap::Args)]
 pub struct Args {
@@ -15,8 +15,8 @@ The index of a repository can be checked on the config.toml file or by running `
 
 pub async fn handle(
     args: &Args,
-    _indexes: &HashMap<String, PathBuf>,
-    _aliases: &HashMap<String, PathBuf>,
+    indexes: &HashMap<i32, String>,
+    aliases: &HashMap<String, String>,
 ) -> Result<i32> {
     let url = gix_url::parse(args.name.as_str().into()).context("parsing repository name arg")?;
 
@@ -26,9 +26,19 @@ pub async fn handle(
                 .parse::<i32>()
                 .context("parsing index into an integer")?;
 
-            println!("Parsing index: {:?}", index);
+            let path = indexes
+                .get(&index)
+                .ok_or_else(|| anyhow!("index not found"))?;
+
+            println!("{}", path);
+
+            return Ok(0);
         } else if !url.path.contains(&b'/') {
-            println!("Potential alias");
+            if let Some(path) = aliases.get(&url.path.to_string()) {
+                println!("{}", path);
+
+                return Ok(0);
+            }
         }
     }
 
@@ -37,11 +47,11 @@ pub async fn handle(
 
 #[cfg(test)]
 mod test {
-    use std::{collections::HashMap, path::PathBuf};
+    use std::collections::HashMap;
 
     use super::{Args, handle};
 
-    const EXAMPLES: [&str; 9] = [
+    const EXAMPLES: [&str; 10] = [
         "@1",
         "git://git.kernel.org/pub/scm/bluetooth/bluez.git",
         "https://git.kernel.org/pub/scm/bluetooth/bluez.git",
@@ -51,6 +61,7 @@ mod test {
         "github.com/augustoccesar/repos",
         "augustoccesar/repos",
         "repos",
+        "aliased-repos",
     ];
 
     #[tokio::test]
@@ -60,8 +71,11 @@ mod test {
                 &Args {
                     name: example.into(),
                 },
-                &HashMap::from([("1".to_string(), PathBuf::from("github.com/rust-lang/rust"))]),
-                &HashMap::new(),
+                &HashMap::from([(1, "github.com/rust-lang/rust".to_string())]),
+                &HashMap::from([(
+                    "aliased-repos".to_string(),
+                    "github.com/augustoccesar/repos".to_string(),
+                )]),
             )
             .await;
 
