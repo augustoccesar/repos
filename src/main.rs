@@ -1,5 +1,4 @@
 mod commands;
-mod repository;
 
 use std::process::exit;
 
