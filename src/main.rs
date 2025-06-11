@@ -1,8 +1,9 @@
+mod commands;
+mod repository;
+
 use std::process::exit;
 
 use clap::{Parser, Subcommand};
-
-mod commands;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
