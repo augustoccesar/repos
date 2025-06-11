@@ -1,3 +1,5 @@
+use std::{collections::HashMap, path::PathBuf};
+
 use anyhow::{Context, Result};
 
 #[derive(clap::Args)]
@@ -11,20 +13,32 @@ The index of a repository can be checked on the config.toml file or by running `
     name: String,
 }
 
-pub async fn handle(args: &Args) -> Result<i32> {
+pub async fn handle(
+    args: &Args,
+    _indexes: &HashMap<String, PathBuf>,
+    _aliases: &HashMap<String, PathBuf>,
+) -> Result<i32> {
     let url = gix_url::parse(args.name.as_str().into()).context("parsing repository name arg")?;
 
-    if url.scheme == gix_url::Scheme::File && url.path.starts_with(b"@") {
-        println!("Parsing and index");
-    }
+    if url.scheme == gix_url::Scheme::File {
+        if url.path.starts_with(b"@") {
+            let index = std::str::from_utf8(&url.path[1..])?
+                .parse::<i32>()
+                .context("parsing index into an integer")?;
 
-    println!("Handle expand");
+            println!("Parsing index: {:?}", index);
+        } else if !url.path.contains(&b'/') {
+            println!("Potential alias");
+        }
+    }
 
     Ok(0)
 }
 
 #[cfg(test)]
 mod test {
+    use std::{collections::HashMap, path::PathBuf};
+
     use super::{Args, handle};
 
     const EXAMPLES: [&str; 9] = [
@@ -42,9 +56,13 @@ mod test {
     #[tokio::test]
     async fn test_handle_examples() {
         for example in EXAMPLES {
-            let result = handle(&Args {
-                name: example.into(),
-            })
+            let result = handle(
+                &Args {
+                    name: example.into(),
+                },
+                &HashMap::from([("1".to_string(), PathBuf::from("github.com/rust-lang/rust"))]),
+                &HashMap::new(),
+            )
             .await;
 
             assert!(result.is_ok());

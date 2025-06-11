@@ -1,6 +1,6 @@
 mod commands;
 
-use std::process::exit;
+use std::{collections::HashMap, process::exit};
 
 use clap::{Parser, Subcommand};
 
@@ -34,9 +34,13 @@ enum Commands {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
+    // TODO: Load indexes and aliases from the config.yaml
+    let indexes = HashMap::new();
+    let aliases = HashMap::new();
+
     let status = match &cli.command {
         Commands::Activate(args) => commands::handle_activate(args).await,
-        Commands::Expand(args) => commands::handle_expand(args).await,
+        Commands::Expand(args) => commands::handle_expand(args, &indexes, &aliases).await,
         Commands::List(args) => commands::handle_list(args).await,
         Commands::Track(args) => commands::handle_track(args).await,
         Commands::Update(args) => commands::handle_update(args).await,
