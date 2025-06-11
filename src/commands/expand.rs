@@ -31,5 +31,5 @@ Supported formats:
 pub async fn handle(_args: &Args) -> Result<i32> {
     println!("Handle expand");
 
-    return Ok(0);
+    Ok(0)
 }
