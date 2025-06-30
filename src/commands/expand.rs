@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-
 use anyhow::{Context, Result, anyhow};
+
+use crate::config::Config;
 
 #[derive(clap::Args)]
 pub struct Args {
@@ -13,27 +13,34 @@ The index of a repository can be checked on the config.toml file or by running `
     name: String,
 }
 
-pub async fn handle(
-    args: &Args,
-    indexes: &HashMap<i32, String>,
-    aliases: &HashMap<String, String>,
-) -> Result<i32> {
+pub async fn handle(args: &Args, config: &Config) -> Result<i32> {
     let url = gix_url::parse(args.name.as_str().into()).context("parsing repository name arg")?;
 
     if url.scheme == gix_url::Scheme::File {
-        if url.path.starts_with(b"@") {
-            let index = std::str::from_utf8(&url.path[1..])?
-                .parse::<i32>()
-                .context("parsing index into an integer")?;
+        if let Some(index) = &config.index
+            && url.path.starts_with(b"@")
+        {
+            let key = std::str::from_utf8(&url.path[1..])
+                .context("failed to get index key from input")?;
 
-            let path = indexes
-                .get(&index)
-                .ok_or_else(|| anyhow!("index not found"))?;
+            let path = index
+                .get(key)
+                .ok_or_else(|| anyhow!("index '{}' not found", key))?;
 
-            println!("{}", path);
+            println!(
+                "{}/{}",
+                Config::base_path()
+                    .context("failed to get the base path")?
+                    .to_string_lossy(),
+                path
+            );
 
             return Ok(0);
-        } else if !url.path.contains(&b'/') {
+        }
+
+        if let Some(aliases) = &config.aliases
+            && !url.path.contains(&b'/')
+        {
             if let Some(path) = aliases.get(&url.path.to_string()) {
                 println!("{}", path);
 
@@ -48,6 +55,8 @@ pub async fn handle(
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
+
+    use crate::config::Config;
 
     use super::{Args, handle};
 
@@ -67,15 +76,23 @@ mod test {
     #[tokio::test]
     async fn test_handle_examples() {
         for example in EXAMPLES {
+            let config = Config {
+                index: Some(HashMap::from([(
+                    "1".to_string(),
+                    "github.com/rust-lang/rust".to_string(),
+                )])),
+                aliases: Some(HashMap::from([(
+                    "aliased-repos".to_string(),
+                    "github.com/augustoccesar/repos".to_string(),
+                )])),
+                ..Default::default()
+            };
+
             let result = handle(
                 &Args {
                     name: example.into(),
                 },
-                &HashMap::from([(1, "github.com/rust-lang/rust".to_string())]),
-                &HashMap::from([(
-                    "aliased-repos".to_string(),
-                    "github.com/augustoccesar/repos".to_string(),
-                )]),
+                &config,
             )
             .await;
 
