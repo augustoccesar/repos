@@ -1,14 +1,12 @@
-use anyhow::Result;
-
 #[derive(clap::Args)]
 pub struct Args {
     shell: Shell,
 }
 
-pub async fn handle(_args: &Args) -> Result<i32> {
+pub async fn handle(_args: &Args) {
     println!("Handle activate");
 
-    Ok(0)
+    std::process::exit(0);
 }
 
 #[derive(Clone, Debug, clap::ValueEnum)]

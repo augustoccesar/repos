@@ -1,8 +1,6 @@
 mod commands;
 mod config;
 
-use std::process::exit;
-
 use anyhow::Context;
 use clap::{Parser, Subcommand};
 
@@ -40,13 +38,13 @@ async fn main() -> anyhow::Result<()> {
 
     let config = Config::load().context("failed to load config file")?;
 
-    let status = match &cli.command {
+    match &cli.command {
         Commands::Activate(args) => commands::handle_activate(args).await,
         Commands::Expand(args) => commands::handle_expand(args, &config).await,
         Commands::List(args) => commands::handle_list(args).await,
         Commands::Track(args) => commands::handle_track(args).await,
         Commands::Update(args) => commands::handle_update(args).await,
-    }?;
+    }
 
-    exit(status);
+    Ok(())
 }

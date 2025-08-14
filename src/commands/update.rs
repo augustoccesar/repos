@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 #[derive(clap::Args)]
 pub struct Args {
     #[arg(
@@ -9,8 +7,8 @@ pub struct Args {
     skip_cache: bool,
 }
 
-pub async fn handle(_args: &Args) -> Result<i32> {
+pub async fn handle(_args: &Args) {
     println!("Handle update");
 
-    Ok(0)
+    std::process::exit(0);
 }

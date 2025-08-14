@@ -1,10 +1,8 @@
-use anyhow::Result;
-
 #[derive(clap::Args)]
 pub struct Args {}
 
-pub async fn handle(_args: &Args) -> Result<i32> {
+pub async fn handle(_args: &Args) {
     println!("Handle track");
 
-    Ok(0)
+    std::process::exit(0);
 }
