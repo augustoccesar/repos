@@ -10,18 +10,19 @@ use serde::Deserialize;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Config {
-    #[serde(rename = "host")]
-    pub default_host: Option<String>,
-    #[serde(rename = "username")]
-    pub default_user: Option<String>,
+    #[serde(rename = "host", default = "default_host")]
+    pub host: String,
+    #[serde(rename = "username", default = "default_user")]
+    pub username: String,
+    #[serde(rename = "base_path", default = "default_base_path")]
+    pub base_path: PathBuf,
     pub aliases: Option<HashMap<String, String>>,
     pub index: Option<HashMap<String, String>>,
 }
 
 impl Config {
     pub fn load() -> Result<Self> {
-        let mut path = Self::base_path()?;
-        path.push("config.toml");
+        let path = config_dir_path().join("config.toml");
 
         let config_data =
             fs::read_to_string(&path).context(format!("failed to read file: {:?}", &path))?;
@@ -31,11 +32,20 @@ impl Config {
 
         Ok(config)
     }
+}
 
-    pub fn base_path() -> Result<PathBuf> {
-        let mut path = env::home_dir().context("failed to get home directory")?;
-        path.push("repos");
+fn config_dir_path() -> PathBuf {
+    env::home_dir().unwrap().join(".config").join("repos")
+}
 
-        Ok(path)
-    }
+fn default_base_path() -> PathBuf {
+    env::home_dir().unwrap().join("repos")
+}
+
+fn default_host() -> String {
+    String::from("github.com")
+}
+
+fn default_user() -> String {
+    whoami::username()
 }
