@@ -11,6 +11,10 @@ directory.
 The index of a repository can be checked on the config.toml file or by running `repos list`."
     )]
     name: String,
+
+    /// If should clone the repo if not found locally.
+    #[arg(long, default_value = "false")]
+    clone: bool,
 }
 
 pub async fn handle(args: &Args, config: &Config) {
