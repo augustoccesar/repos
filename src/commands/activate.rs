@@ -1,10 +1,12 @@
+const FISH_SCRIPT: &str = include_str!("../../repos.fish");
+
 #[derive(clap::Args)]
 pub struct Args {
     shell: Shell,
 }
 
 pub async fn handle(_args: &Args) {
-    println!("Handle activate");
+    println!("{}", FISH_SCRIPT);
 
     std::process::exit(0);
 }
