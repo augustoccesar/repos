@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     env,
-    fs::{self},
+    fs::{self, File},
     path::PathBuf,
 };
 
@@ -22,13 +22,21 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Result<Self> {
-        let path = config_dir_path().join("config.toml");
+        let config_dir = config_dir_path();
+        if !config_dir_path().exists() {
+            fs::create_dir_all(config_dir)?;
+        }
 
-        let config_data =
-            fs::read_to_string(&path).context(format!("failed to read file: {:?}", &path))?;
+        let config_file_path = config_dir_path().join("config.toml");
+        if !config_file_path.exists() {
+            File::create(&config_file_path)?;
+        }
 
-        let config: Self =
-            toml::from_str(&config_data).context(format!("failed to parse file '{:?}'", &path))?;
+        let config_data = fs::read_to_string(&config_file_path)
+            .context(format!("failed to read file: {:?}", &config_file_path))?;
+
+        let config: Self = toml::from_str(&config_data)
+            .context(format!("failed to parse file '{:?}'", &config_file_path))?;
 
         Ok(config)
     }
