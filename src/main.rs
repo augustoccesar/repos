@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod git;
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};

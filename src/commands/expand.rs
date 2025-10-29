@@ -1,6 +1,6 @@
 use anyhow::{Context, anyhow};
 
-use crate::config::Config;
+use crate::{config::Config, git};
 
 #[derive(clap::Args)]
 pub struct Args {
@@ -10,7 +10,7 @@ directory.
 
 The index of a repository can be checked on the config.toml file or by running `repos list`."
     )]
-    name: String,
+    name: Option<String>,
 
     /// If should clone the repo if not found locally.
     #[arg(long, default_value = "false")]
@@ -18,7 +18,7 @@ The index of a repository can be checked on the config.toml file or by running `
 }
 
 pub async fn handle(args: &Args, config: &Config) {
-    match expand(&args.name, config) {
+    match expand(args.name.as_deref(), config) {
         Ok(path) => {
             println!("{}", path);
 
@@ -32,9 +32,28 @@ pub async fn handle(args: &Args, config: &Config) {
     }
 }
 
-fn expand(input: &str, config: &Config) -> Result<String, anyhow::Error> {
-    let url = gix_url::parse(input.into()).context("parsing repository name arg")?;
+fn expand(input: Option<&str>, config: &Config) -> Result<String, anyhow::Error> {
     let base_path = &config.base_path;
+
+    let input = match input {
+        Some(input) => input,
+        None => {
+            let base_path = base_path.to_str().expect("base path to be a valid path");
+            let git_root = git::get_repo_root()?;
+
+            if !git_root.starts_with(base_path) {
+                println!("This directory/repository is not managed by repos.");
+                println!("Only directories under '{base_path}' are.");
+
+                std::process::exit(1);
+            } else {
+                &git_root.replace(base_path, "")
+            }
+        }
+    };
+
+    let input = input.trim_start_matches('/');
+    let url = gix_url::parse(input.into()).context("parsing repository name arg")?;
 
     match url.scheme {
         gix_url::Scheme::File => {
@@ -57,7 +76,7 @@ fn expand(input: &str, config: &Config) -> Result<String, anyhow::Error> {
                 && !url.path.contains(&b'/')
             {
                 if let Some(input) = aliases.get(&url.path.to_string()) {
-                    return expand(input, config);
+                    return expand(Some(input), config);
                 }
             }
 
@@ -209,7 +228,7 @@ mod test {
                 )])),
             };
 
-            let result = expand(example, &config);
+            let result = expand(Some(example), &config);
 
             assert!(
                 result.is_ok(),
