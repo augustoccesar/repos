@@ -118,7 +118,10 @@ fn expand(input: Option<&str>, config: &Config) -> Result<String, anyhow::Error>
 
             return Ok(full_path);
         }
-        gix_url::Scheme::Git => {
+        gix_url::Scheme::Https
+        | gix_url::Scheme::Http
+        | gix_url::Scheme::Ssh
+        | gix_url::Scheme::Git => {
             let path = url.path.to_string();
             let path = path.trim_start_matches('/').trim_end_matches(".git");
 
@@ -134,40 +137,7 @@ fn expand(input: Option<&str>, config: &Config) -> Result<String, anyhow::Error>
 
             return Ok(full_path);
         }
-        gix_url::Scheme::Ssh => {
-            let path = url.path.to_string();
-            let path = path.trim_start_matches('/').trim_end_matches(".git");
-
-            let host = url
-                .host()
-                .ok_or_else(|| anyhow!("Expects git urls to have a host"))?;
-
-            let full_path = base_path
-                .join(host)
-                .join(path)
-                .to_string_lossy()
-                .to_string();
-
-            return Ok(full_path);
-        }
-        gix_url::Scheme::Http => todo!(),
-        gix_url::Scheme::Https => {
-            let path = url.path.to_string();
-            let path = path.trim_start_matches('/').trim_end_matches(".git");
-
-            let host = url
-                .host()
-                .ok_or_else(|| anyhow!("Expects git urls to have a host"))?;
-
-            let full_path = base_path
-                .join(host)
-                .join(path)
-                .to_string_lossy()
-                .to_string();
-
-            return Ok(full_path);
-        }
-        gix_url::Scheme::Ext(_) => todo!(),
+        gix_url::Scheme::Ext(_) => return Err(anyhow!("Unsupported URL scheme")),
     }
 }
 
