@@ -1,11 +1,13 @@
 mod commands;
 mod config;
 mod git;
+mod repos_dir;
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
 
 use crate::config::Config;
+use crate::repos_dir::list_repositories;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -42,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
     match &cli.command {
         Commands::Activate(args) => commands::handle_activate(args).await,
         Commands::Expand(args) => commands::handle_expand(args, &config).await,
-        Commands::List(args) => commands::handle_list(args).await,
+        Commands::List(args) => commands::handle_list(args, &config).await,
         Commands::Track(args) => commands::handle_track(args).await,
         Commands::Update(args) => commands::handle_update(args).await,
     }
