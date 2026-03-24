@@ -18,7 +18,7 @@ pub async fn handle(args: &Args, config: &Config) {
             }
         }
 
-        println!("{}", repository_path_str);
+        println!("{repository_path_str}");
     }
 
     std::process::exit(0);

@@ -55,5 +55,5 @@ fn default_host() -> String {
 }
 
 fn default_user() -> String {
-    whoami::username()
+    whoami::username().expect("whoami username should be resolvable")
 }
