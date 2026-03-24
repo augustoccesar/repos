@@ -24,14 +24,37 @@ The index of a repository can be checked on the config.toml file or by running `
 }
 
 pub async fn handle(args: &Args, config: &Config) {
-    match expand(args.name.as_deref(), config) {
+    let base_path = &config.base_path;
+
+    let input = match args.name.as_deref() {
+        Some(input) => input,
+        None => {
+            let base_path = base_path.to_str().expect("base path to be a valid path");
+            let Ok(git_root) = git::get_repo_root() else {
+                eprintln!("Failed to resolve current folder git root");
+                std::process::exit(1);
+            };
+
+            if !git_root.starts_with(base_path) {
+                eprintln!(
+                    "This directory/repository is not managed by repos.\nOnly directories under '{base_path}' are."
+                );
+
+                std::process::exit(1);
+            } else {
+                &git_root.replace(base_path, "")
+            }
+        }
+    };
+
+    match Repository::resolve(input, config) {
         Ok(repository) => match (repository.path.exists(), args.clone) {
             (true, _) => {
                 println!("{}", repository.path.to_string_lossy());
                 std::process::exit(0);
             }
             (false, false) => {
-                println!(
+                eprintln!(
                     "Repository not found!\nLookup path: {}",
                     repository.path.to_string_lossy()
                 );
@@ -64,12 +87,12 @@ pub async fn handle(args: &Args, config: &Config) {
                             println!("Aborted!");
                             std::process::exit(1);
                         }
-                        _ => println!("Invalid input"),
+                        _ => eprintln!("Invalid input"),
                     }
                 }
 
                 if let Err(error) = git::clone(&repository.clone_url, &repository.path) {
-                    println!("Failed to clone repository: {error}");
+                    eprintln!("Failed to clone repository: {error}");
                     std::process::exit(1);
                 }
 
@@ -78,34 +101,11 @@ pub async fn handle(args: &Args, config: &Config) {
             }
         },
         Err(error) => {
-            eprintln!("{}", error);
+            eprintln!("{error}");
 
             std::process::exit(1);
         }
     }
-}
-
-fn expand(input: Option<&str>, config: &Config) -> Result<Repository, anyhow::Error> {
-    let base_path = &config.base_path;
-
-    let input = match input {
-        Some(input) => input,
-        None => {
-            let base_path = base_path.to_str().expect("base path to be a valid path");
-            let git_root = git::get_repo_root()?;
-
-            if !git_root.starts_with(base_path) {
-                println!("This directory/repository is not managed by repos.");
-                println!("Only directories under '{base_path}' are.");
-
-                std::process::exit(1);
-            } else {
-                &git_root.replace(base_path, "")
-            }
-        }
-    };
-
-    Repository::resolve(input, config)
 }
 
 #[derive(Debug)]
@@ -186,10 +186,10 @@ impl Repository {
                     false,
                 )?;
 
-                return Ok(Self {
+                Ok(Self {
                     path: full_path,
                     clone_url,
-                });
+                })
             }
             gix_url::Scheme::Https
             | gix_url::Scheme::Http
@@ -204,12 +204,12 @@ impl Repository {
 
                 let full_path = config.base_path.join(host).join(path);
 
-                return Ok(Self {
+                Ok(Self {
                     path: full_path,
                     clone_url: url,
-                });
+                })
             }
-            gix_url::Scheme::Ext(_) => return Err(anyhow!("Unsupported URL scheme")),
+            gix_url::Scheme::Ext(_) => Err(anyhow!("Unsupported URL scheme")),
         }
     }
 }
@@ -218,7 +218,7 @@ impl Repository {
 mod test {
     use std::{collections::HashMap, path::PathBuf};
 
-    use crate::{commands::expand::expand, config::Config};
+    use crate::{commands::expand::Repository, config::Config};
 
     #[tokio::test]
     async fn test_expand_examples() {
@@ -271,17 +271,17 @@ mod test {
                 )])),
             };
 
-            let result = expand(Some(example), &config);
+            let repository = Repository::resolve(example, &config);
 
             assert!(
-                result.is_ok(),
+                repository.is_ok(),
                 "failed to expand '{}': {}",
                 example,
-                result.as_ref().err().unwrap()
+                repository.as_ref().err().unwrap()
             );
 
             assert_eq!(
-                result.unwrap().path.to_str().unwrap(),
+                repository.unwrap().path.to_str().unwrap(),
                 expected_path,
                 "expand('{}') returned incorrect path",
                 example

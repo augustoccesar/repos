@@ -27,12 +27,6 @@ enum Commands {
 
     #[clap(about = "List all the available repositories")]
     List(commands::ListArgs),
-
-    #[clap(about = "Move repository under the repos tracked structure")]
-    Track(commands::TrackArgs),
-
-    #[clap(about = "Updates the CLI to the latest available version")]
-    Update(commands::UpdateArgs),
 }
 
 #[tokio::main]
@@ -45,8 +39,6 @@ async fn main() -> anyhow::Result<()> {
         Commands::Activate(args) => commands::handle_activate(args).await,
         Commands::Expand(args) => commands::handle_expand(args, &config).await,
         Commands::List(args) => commands::handle_list(args, &config).await,
-        Commands::Track(args) => commands::handle_track(args).await,
-        Commands::Update(args) => commands::handle_update(args).await,
     }
 
     Ok(())

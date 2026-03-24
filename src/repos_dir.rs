@@ -31,16 +31,12 @@ fn walk_dir(repositories: &mut Vec<PathBuf>, dir_entry: &DirEntry, depth: u8) {
         return;
     }
 
-    let entries: Vec<DirEntry> = fs::read_dir(&dir_entry.path())
+    let entries: Vec<DirEntry> = fs::read_dir(dir_entry.path())
         .unwrap()
         .filter_map(|entry| entry.ok())
         .collect();
 
-    if entries
-        .iter()
-        .find(|entry| entry.file_name() == ".git")
-        .is_some()
-    {
+    if entries.iter().any(|entry| entry.file_name() == ".git") {
         repositories.push(dir_entry.path());
 
         return;

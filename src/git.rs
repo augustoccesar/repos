@@ -5,7 +5,7 @@ use gix_url::Url;
 
 pub fn get_repo_root() -> Result<String, anyhow::Error> {
     let rev_parse_output = std::process::Command::new("git")
-        .args(&["rev-parse", "--show-toplevel"])
+        .args(["rev-parse", "--show-toplevel"])
         .output()
         .context("failed to execute git rev-parse")?;
 
@@ -22,7 +22,7 @@ pub fn get_repo_root() -> Result<String, anyhow::Error> {
 
 pub fn clone(url: &Url, destination: &Path) -> Result<(), anyhow::Error> {
     let clone_output = std::process::Command::new("git")
-        .args(&["clone", &url.to_string(), &destination.to_string_lossy()])
+        .args(["clone", &url.to_string(), &destination.to_string_lossy()])
         .output()
         .context("failed to execute git clone")?;
 
