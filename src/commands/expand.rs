@@ -137,8 +137,12 @@ impl Repository {
                 if let Some(aliases) = &config.aliases
                     && !url.path.contains(&b'/')
                 {
-                    if let Some(input) = aliases.get(&url.path.to_string()) {
-                        return Self::resolve(input, config);
+                    if let Some(resolved_alias) = aliases.get(&url.path.to_string()) {
+                        if input == resolved_alias {
+                            return Err(anyhow!("Cyclic alias found."));
+                        }
+
+                        return Self::resolve(resolved_alias, config);
                     }
                 }
 
