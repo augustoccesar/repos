@@ -6,11 +6,19 @@ pub struct Args {
     filter: Option<String>,
 }
 
-pub async fn handle(_args: &Args, config: &Config) {
+pub async fn handle(args: &Args, config: &Config) {
     let repositories = crate::list_repositories(&config.base_path);
 
     for repository in repositories {
-        println!("{}", repository.to_str().unwrap());
+        let repository_path_str = repository.to_string_lossy();
+
+        if let Some(filter) = &args.filter {
+            if !repository_path_str.contains(filter) {
+                continue;
+            }
+        }
+
+        println!("{}", repository_path_str);
     }
 
     std::process::exit(0);
