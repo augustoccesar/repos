@@ -47,6 +47,12 @@ pub async fn handle(args: &Args, config: &Config) {
         }
     };
 
+    if input == "@" {
+        println!("{}", config.base_path.to_string_lossy());
+
+        std::process::exit(0);
+    }
+
     match Repository::resolve(input, config) {
         Ok(repository) => match (repository.path.exists(), args.clone) {
             (true, _) => {
