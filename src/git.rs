@@ -10,13 +10,13 @@ pub fn get_repo_root() -> Result<String, anyhow::Error> {
         .context("failed to execute git rev-parse")?;
 
     if rev_parse_output.status.success() {
-        Ok(String::from_utf8(rev_parse_output.stdout)
-            .expect("git rev-parse stdout should be valid utf8"))
-    } else {
-        let error = String::from_utf8(rev_parse_output.stderr)
-            .expect("git rev-parse stderr should be valid utf8");
+        let output = String::from_utf8_lossy(rev_parse_output.stdout.trim_ascii());
 
-        Err(anyhow!(error))
+        Ok(output.to_string())
+    } else {
+        let error = String::from_utf8_lossy(rev_parse_output.stderr.trim_ascii());
+
+        Err(anyhow!(error.to_string()))
     }
 }
 
