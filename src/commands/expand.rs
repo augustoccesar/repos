@@ -21,6 +21,17 @@ The index of a repository can be checked on the config.toml file or by running `
     /// If should clone the repo if not found locally.
     #[arg(long, default_value = "false")]
     clone: bool,
+
+    /// Which expansion to resolve. Either the path to the 'local' repository or the 'remote' website.
+    #[arg(long, short)]
+    mode: Mode,
+}
+
+#[derive(Debug, Clone, Default, clap::ValueEnum)]
+pub enum Mode {
+    #[default]
+    Local,
+    Remote,
 }
 
 pub async fn handle(args: &Args, config: &Config) {
@@ -47,18 +58,18 @@ pub async fn handle(args: &Args, config: &Config) {
         }
     };
 
-    if input == "@" {
+    // Only expand to the base path if the mode is 'local'
+    if input == "@" && matches!(args.mode, Mode::Local) {
         println!("{}", config.base_path.to_string_lossy());
 
         std::process::exit(0);
     }
 
-    match Repository::resolve(input, config) {
+    // TODO(augustoccesar)[2026-03-31]: Instead of doing the process exit on each failure branch,
+    //  make so that the match return a Result and use that to exit after.
+    let repository: Repository = match Repository::resolve(input, config) {
         Ok(repository) => match (repository.path.exists(), args.clone) {
-            (true, _) => {
-                println!("{}", repository.path.to_string_lossy());
-                std::process::exit(0);
-            }
+            (true, _) => repository,
             (false, false) => {
                 eprintln!(
                     "Repository not found!\nLookup path: {}",
@@ -102,8 +113,7 @@ pub async fn handle(args: &Args, config: &Config) {
                     std::process::exit(1);
                 }
 
-                println!("{}", repository.path.to_string_lossy());
-                std::process::exit(0);
+                repository
             }
         },
         Err(error) => {
@@ -111,6 +121,11 @@ pub async fn handle(args: &Args, config: &Config) {
 
             std::process::exit(1);
         }
+    };
+
+    match args.mode {
+        Mode::Local => println!("{}", repository.path.to_string_lossy()),
+        Mode::Remote => println!("{}", repository.website_url),
     }
 }
 
@@ -118,6 +133,8 @@ pub async fn handle(args: &Args, config: &Config) {
 struct Repository {
     path: PathBuf,
     clone_url: Url,
+    // TODO(augustoccesar)[2026-03-31]: Have Url here as well, but not the one from gix_url.
+    website_url: String,
 }
 
 impl Repository {
@@ -192,9 +209,13 @@ impl Repository {
                     false,
                 )?;
 
+                // TODO(augustoccesar)[2026-03-31]: Have Url here as well, but not the one from gix_url.
+                let website_url = format!("https://{host}/{user}/{repo}");
+
                 Ok(Self {
                     path: full_path,
                     clone_url,
+                    website_url,
                 })
             }
             gix_url::Scheme::Https
@@ -210,9 +231,13 @@ impl Repository {
 
                 let full_path = config.base_path.join(host).join(path);
 
+                // TODO(augustoccesar)[2026-03-31]: Have Url here as well, but not the one from gix_url.
+                let website_url = format!("https://{host}/{path}");
+
                 Ok(Self {
                     path: full_path,
                     clone_url: url,
+                    website_url,
                 })
             }
             gix_url::Scheme::Ext(_) => Err(anyhow!("Unsupported URL scheme")),
