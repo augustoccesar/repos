@@ -266,6 +266,7 @@ mod test {
             let config = Config {
                 host: "github.com".to_string(),
                 username: "augustoccesar".to_string(),
+                editor: "zed".to_string(),
                 base_path: PathBuf::new().join("/test").join("base"),
                 index: Some(HashMap::from([(
                     "1".to_string(),

@@ -36,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::load().context("failed to load config file")?;
 
     match &cli.command {
-        Commands::Activate(args) => commands::handle_activate(args).await,
+        Commands::Activate(args) => commands::handle_activate(args, &config).await,
         Commands::Expand(args) => commands::handle_expand(args, &config).await,
         Commands::List(args) => commands::handle_list(args, &config).await,
     }

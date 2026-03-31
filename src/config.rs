@@ -10,12 +10,18 @@ use serde::Deserialize;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Config {
-    #[serde(rename = "host", default = "default_host")]
+    #[serde(default = "default_host")]
     pub host: String,
-    #[serde(rename = "username", default = "default_user")]
+
+    #[serde(default = "default_user")]
     pub username: String,
-    #[serde(rename = "base_path", default = "default_base_path")]
+
+    #[serde(default = "default_editor")]
+    pub editor: String,
+
+    #[serde(default = "default_base_path")]
     pub base_path: PathBuf,
+
     pub aliases: Option<HashMap<String, String>>,
     pub index: Option<HashMap<String, String>>,
 }
@@ -56,4 +62,8 @@ fn default_host() -> String {
 
 fn default_user() -> String {
     whoami::username().expect("whoami username should be resolvable")
+}
+
+fn default_editor() -> String {
+    String::from("zed")
 }
