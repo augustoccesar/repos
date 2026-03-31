@@ -267,7 +267,7 @@ mod test {
                 host: "github.com".to_string(),
                 username: "augustoccesar".to_string(),
                 editor: "zed".to_string(),
-                base_path: PathBuf::new().join("/test").join("base"),
+                base_path: PathBuf::new().join("test").join("base"),
                 index: Some(HashMap::from([(
                     "1".to_string(),
                     "github.com/rust-lang/rust".to_string(),
@@ -290,8 +290,7 @@ mod test {
             assert_eq!(
                 repository.unwrap().path.to_str().unwrap(),
                 expected_path,
-                "expand('{}') returned incorrect path",
-                example
+                "expand('{example}') returned incorrect path",
             );
         }
     }
