@@ -139,6 +139,13 @@ struct Repository {
 
 impl Repository {
     fn resolve(input: &str, config: &Config) -> Result<Self, anyhow::Error> {
+        let base_path = config.base_path.to_string_lossy();
+        if input.starts_with(base_path.as_ref()) {
+            let path_without_base = input.replace(base_path.as_ref(), "");
+
+            return Repository::resolve(&path_without_base, config);
+        }
+
         let input = input.trim_start_matches('/');
         let url = gix_url::parse(input.into()).context("parsing repository name arg")?;
 
