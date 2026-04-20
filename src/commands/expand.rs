@@ -23,7 +23,7 @@ The index of a repository can be checked on the config.toml file or by running `
     clone: bool,
 
     /// Which expansion to resolve. Either the path to the 'local' repository or the 'remote' website.
-    #[arg(long, short)]
+    #[arg(long, short, default_value = "local")]
     mode: Mode,
 }
 
