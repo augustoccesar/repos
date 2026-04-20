@@ -6,9 +6,9 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default = "default_host")]
     pub host: String,
@@ -28,6 +28,29 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Result<Self> {
+        let config_file_path = Self::ensure_exists()?;
+
+        let config_data = fs::read_to_string(&config_file_path)
+            .context(format!("failed to read file: {:?}", &config_file_path))?;
+
+        let config: Self = toml::from_str(&config_data)
+            .context(format!("failed to parse file '{:?}'", &config_file_path))?;
+
+        Ok(config)
+    }
+
+    pub fn save(&self) -> Result<()> {
+        let config_file_path = Self::ensure_exists()?;
+
+        fs::write(
+            config_file_path,
+            toml::to_string(self).context("failed to serialize config")?,
+        )?;
+
+        Ok(())
+    }
+
+    fn ensure_exists() -> Result<PathBuf> {
         let config_dir = config_dir_path();
         if !config_dir_path().exists() {
             fs::create_dir_all(config_dir)?;
@@ -38,13 +61,7 @@ impl Config {
             File::create(&config_file_path)?;
         }
 
-        let config_data = fs::read_to_string(&config_file_path)
-            .context(format!("failed to read file: {:?}", &config_file_path))?;
-
-        let config: Self = toml::from_str(&config_data)
-            .context(format!("failed to parse file '{:?}'", &config_file_path))?;
-
-        Ok(config)
+        Ok(config_file_path)
     }
 }
 
