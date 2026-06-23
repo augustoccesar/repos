@@ -206,13 +206,14 @@ impl Repository {
                 };
 
                 let full_path = config.base_path.join(host).join(user).join(repo);
+                // TODO(@augustoccesar)[2026-06-23]: This format might be only for GitHub.
                 let clone_url = Url::from_parts(
                     gix_url::Scheme::Ssh,
-                    Some(user.to_owned()),
+                    Some("git".to_string()),
                     None,
                     Some(host.to_owned()),
                     None,
-                    format!("/{repo}").into(),
+                    format!("{user}/{repo}").into(),
                     false,
                 )?;
 
